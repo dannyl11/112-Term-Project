@@ -1,0 +1,56 @@
+from cmu_graphics import *
+
+def onAppStart(app):
+    app.height = 800
+    app.width = 1000
+    app.cx = app.width/2
+    app.cy = app.height/2
+    app.loadbar = 1
+
+def redrawAll(app):
+    if app.screen == 'Title':
+        drawTitleScreen(app)
+    if app.screen == 'Main':
+        drawRect(app.cx, app.cy, 200, 200, fill='white')
+
+def drawTitleScreen(app):
+    drawRect(0, 0, app.width, app.height, fill='black')
+    logosize = (0.15)*app.width
+    drawLogo(app, app.cx, (1/6)*app.height, logosize)
+    if app.loadbar < (5/8*app.width):
+        drawLoadingBar(app)
+    if app.loadbar >= (5/8)*app.width:
+        drawRect(app.cx,(13/16)*app.height, 150, 50, fill='green', opacity=50, 
+                 border='green', borderWidth=5, align='center')
+        drawLabel('View Data', app.cx, (13/16)*app.height, size=16, fill='white')
+def drawLogo(app, cx, cy, size):
+    textCenter = cx+size - (15/35)*size
+    rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
+    rectGLeft, rectRLeft = (cx-((15/35)*size) - (42.5/20)*size, 
+                            cx-((15/35)*size) - (32.5/20)*size)
+    triHeight, triWidth = 0.3*size, (10.5/20)*size
+    triGMid, triRMid = ((rectGLeft + rectGLeft+rectWidth)/2, 
+                        (rectRLeft + rectRLeft+rectWidth)/2)
+    rBaseY, rLeftX = cy + (7/20)*size, triRMid - triWidth/2
+    gBaseY, gLeftX = cy - (7/20)*size + 1, triGMid - triWidth/2
+    drawLabel('2 Finance', textCenter, cy, bold=True, fill='green', size=size, 
+              font='cinzel')
+    drawRect(rectGLeft, rectTop, rectWidth, rectHeight, fill='green')
+    drawPolygon(gLeftX, gBaseY, triGMid, gBaseY-triHeight, gLeftX+triWidth, gBaseY, 
+                fill='green')
+    drawRect(rectRLeft, rectTop, rectWidth, rectHeight, fill='red')
+    drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
+                fill='red')
+def drawLoadingBar(app):
+    barWidth = (5/8)*app.width
+    barY = (13/16)*app.height
+    barHeight = (0.05)*app.width
+    loadbarLeft = app.cx - barWidth/2
+    loadbarTop  = barY - barHeight/2
+    drawRect(app.cx, barY, barWidth, barHeight, align='center', border='white')
+    drawLabel('Loading Data...', app.cx, barY - 35, align='center', size = 16, fill = 'white')
+    drawRect(loadbarLeft, loadbarTop, app.loadbar, barHeight, border='white', fill='cyan')
+
+def onStep(app):
+    if app.loadbar <= (5/8)*app.width:
+        app.loadbar += 5
