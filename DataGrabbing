@@ -1,0 +1,17 @@
+import pandas_datareader.data as web
+import datetime as dt
+
+def getOpenHighLowCloseVol(ticker, startY, startM, startD, endY, endM, endD):
+    result = dict()
+    startDate = dt.datetime(startY, startM, startD)
+    endDate = dt.datetime(endY, endM, endD)
+    temp = web.DataReader(ticker,'stooq', startDate, endDate)
+    df = temp.sort_index(ascending=True)
+    df['Volume'] = df['Volume'].round().astype(int)
+    print(df)
+    values = df.values.tolist()
+    counter = 0
+    for index, row in df.iterrows():
+        result[str(index)[:10]] = values[counter]
+        counter += 1
+    return result
