@@ -6,12 +6,13 @@ def onAppStart(app):
     app.cx = app.width/2
     app.cy = app.height/2
     app.loadbar = 1
+    app.screen = 0 #0 for title, 1 for main
 
 def redrawAll(app):
-    if app.screen == 'Title':
+    if app.screen == 0:
         drawTitleScreen(app)
-    if app.screen == 'Main':
-        drawRect(app.cx, app.cy, 200, 200, fill='white')
+    if app.screen == 1:
+        drawLabel('Main Screen...', app.cx, app.cy)
 
 def drawTitleScreen(app):
     drawRect(0, 0, app.width, app.height, fill='black')
@@ -20,10 +21,9 @@ def drawTitleScreen(app):
     if app.loadbar < (5/8*app.width):
         drawLoadingBar(app)
     if app.loadbar >= (5/8)*app.width:
-        drawRect(app.cx,(13/16)*app.height, 150, 50, fill='green', opacity=50, 
-                 border='green', borderWidth=5, align='center')
-        drawLabel('View Data', app.cx, (13/16)*app.height, size=16, fill='white')
-
+        drawRect(app.cx-125,(13/16)*app.height-25, 250, 50, fill='green', opacity=50, 
+                 border='green', borderWidth=5)
+        drawLabel('Press any key to view data', app.cx, (13/16)*app.height, size=16, fill='white')
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -42,7 +42,6 @@ def drawLogo(app, cx, cy, size):
     drawRect(rectRLeft, rectTop, rectWidth, rectHeight, fill='red')
     drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
                 fill='red')
-
 def drawLoadingBar(app):
     barWidth = (5/8)*app.width
     barY = (13/16)*app.height
@@ -50,9 +49,27 @@ def drawLoadingBar(app):
     loadbarLeft = app.cx - barWidth/2
     loadbarTop  = barY - barHeight/2
     drawRect(app.cx, barY, barWidth, barHeight, align='center', border='white')
-    drawLabel('Loading Data...', app.cx, barY - 35, align='center', size = 16, fill = 'white')
+    drawLabel('Loading Data...', app.cx, barY - 42.5, align='center', size = 16, fill = 'white')
     drawRect(loadbarLeft, loadbarTop, app.loadbar, barHeight, border='white', fill='cyan')
 
 def onStep(app):
     if app.loadbar <= (5/8)*app.width:
         app.loadbar += 5
+
+def onKeyPress(app, key):
+    if app.screen == 0:
+        app.screen = 1
+
+def onMousePress(app, mouseX, mouseY):
+    app.cursorx = mouseX
+    app.cursory = mouseY
+
+def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
+    buttonRightX = buttonLeftX + width
+    buttonBotY = buttonTopY + height
+    return (buttonTopY <= mouseY <= buttonBotY and 
+            buttonLeftX <= mouseX <= buttonRightX)
+
+def main():
+    runApp()
+main()
