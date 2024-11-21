@@ -1,0 +1,70 @@
+from cmu_graphics import *
+import pandas as pd
+import pandas_datareader.data as web
+import datetime as dt
+
+def getOpenHighLowCloseVol(ticker, startY, startM, startD, endY, endM, endD):
+    result = dict()
+    startDate = dt.datetime(startY, startM, startD)
+    endDate = dt.datetime(endY, endM, endD)
+    temp = web.DataReader(ticker,'stooq', startDate, endDate)
+    df = temp.sort_index(ascending=True)
+    try:
+        df['Volume'] = df['Volume'].round().astype(int)
+    except:
+        pass
+    values = df.values.tolist()
+    counter = 0
+    for index, row in df.iterrows():
+        result[str(index)[:10]] = values[counter]
+        counter += 1
+    return result
+def onAppStart(app):
+    app.height = 800
+    app.width = 1000
+    app.data = getOpenHighLowCloseVol('AAPL', 2023, 3, 17, 2023, 4, 17)
+    app.datapoints = []
+    for date in app.data:
+        app.datapoints.append(app.data[date])
+    app.highs = []
+    app.lows = []
+    for datapoint in app.datapoints:
+        high = datapoint[1]
+        low = datapoint[2]
+        app.highs.append(high)
+        app.lows.append(low)
+def redrawAll(app):
+    drawLine(300, 475, 850, 475)
+    drawLine(300, 475, 300, 175)
+    priceMin = min(app.lows) - 5
+    priceMax = max(app.highs) + 5
+    yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
+    graphX = 300
+    graphLength = 850-300
+    graphY = 475
+    candleWidth = graphLength/len(app.datapoints) - (graphLength/len(app.datapoints)/10)
+    candleX = graphX + candleWidth/2 + 5
+    for datapoint in app.datapoints:
+        open = datapoint[0]
+        high = datapoint[1]
+        low = datapoint[2]
+        close = datapoint[3]
+        volume = datapoint[4]
+        openY = graphY-((open-priceMin)/yScale)
+        highY = graphY-((high-priceMin)/yScale)
+        lowY = graphY-((low-priceMin)/yScale)
+        closeY = graphY-((close-priceMin)/yScale)
+        if close > open:
+            drawLine(candleX, highY, candleX, closeY)
+            drawLine(candleX, lowY, candleX, openY)
+            drawRect(candleX-candleWidth/2, closeY, candleWidth, abs(closeY-openY), fill = 'green')
+            candleX += graphLength/len(app.datapoints)
+        elif open > close:
+            drawLine(candleX, highY, candleX, openY)
+            drawLine(candleX, lowY, candleX, closeY)
+            drawRect(candleX-candleWidth/2, openY, candleWidth, abs(closeY-openY), fill = 'red')
+            candleX += graphLength/len(app.datapoints)
+
+def main():
+    runApp()
+main()
