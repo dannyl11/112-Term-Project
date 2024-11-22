@@ -2,6 +2,31 @@ from cmu_graphics import *
 import pandas as pd
 import pandas_datareader.data as web
 import datetime as dt
+class Button:
+    def __init__(self, stock, x, y, width, height, fill):
+        self.stock = stock
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.fill = fill
+def createButtons(app):
+    msft = Button('MSFT', 60, 120, 200, 70, None)
+    app.buttons.append(msft)
+    aapl = Button('AAPL', 60, 200, 200, 70, None)
+    app.buttons.append(aapl)
+    amzn = Button('AMZN', 60, 280, 200, 70, None)
+    app.buttons.append(amzn)
+    jpm = Button('JPM', 60, 360, 200, 70, None)
+    app.buttons.append(jpm)
+    tsla = Button('TSLA', 60, 440, 200, 70, None)
+    app.buttons.append(tsla)
+    avgo = Button('AVGO', 60, 520, 200, 70, None)
+    app.buttons.append(avgo)
+    lly = Button('LLY', 60, 600, 200, 70, None)
+    app.buttons.append(lly)
+    brk = Button('BRK-B', 60, 680, 200, 70, None)
+    app.buttons.append(brk)
 
 def onAppStart(app):
     app.height = 800
@@ -9,21 +34,25 @@ def onAppStart(app):
     app.cx = app.width/2
     app.cy = app.height/2
     app.screen = 0 #0 for title, 1 for main, 
-    app.stock = 'MSFT'
-    app.data = getOpenHighLowCloseVol(app, app.stock, 2024, 6, 21, 2024, 11, 21)
+    app.stock = 'BRK-B'
     app.datapoints = []
-    for date in app.data:
-        app.datapoints.append(app.data[date])
     app.highs = []
     app.lows = []
-    for datapoint in app.datapoints:
-        high = datapoint[1]
-        low = datapoint[2]
-        app.highs.append(high)
-        app.lows.append(low)
+    try:
+        app.data = getOpenHighLowCloseVol(app, app.stock, 2024, 6, 21, 2024, 11, 21)
+        for date in app.data:
+            app.datapoints.append(app.data[date])
+            for datapoint in app.datapoints:
+                high = datapoint[1]
+                low = datapoint[2]
+                app.highs.append(high)
+                app.lows.append(low)
+    except:
+        pass
+    app.buttons = []
 def drawAxis(app):
-    drawLine(300, 475, 850, 475)
-    drawLine(300, 475, 300, 175)
+    drawLine(350, 475, 900, 475)
+    drawLine(350, 475, 350, 175)
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -62,7 +91,9 @@ def redrawAll(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawAxis(app)
     drawLogo(app, 150, 40, 40)
+    drawButtons(app)
     if app.stock == None:
+        drawLabel('Choose a stock', app.cx, 40, fill='white', size=40)
         pass
     else:
         drawLabel(f'{app.stock}', app.cx, 40, fill='white', size=40)
@@ -73,7 +104,7 @@ def drawCandles(app):
     priceMin = min(app.lows) - 5
     priceMax = max(app.highs) + 5
     yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
-    graphX = 300
+    graphX = 350
     graphLength = 850-300
     graphY = 475
     candleWidth = graphLength/len(app.datapoints) - (graphLength/len(app.datapoints)/10)
@@ -99,12 +130,28 @@ def drawCandles(app):
             drawRect(candleX-candleWidth/2, openY, candleWidth, abs(closeY-openY), fill = 'red')
             candleX += graphLength/len(app.datapoints)
 def drawPrices(app):
-    drawLabel(f'{min(app.lows)}', 270, 470)
-    drawLabel(f'{max(app.highs)}', 270, 180)
-
-def main():
-    runApp(app)
-main()
+    drawLabel(f'{int(min(app.lows))}', 330, 470)
+    drawLabel(f'{int(max(app.highs))}', 330, 180)
+def drawButtons(app):
+    createButtons(app)
+    drawLabels(app)
+    print(app.buttons)
+    for button in app.buttons:
+        drawRect(button.x, button.y, button.width, button.height, border='black', 
+                borderWidth=5, fill=button.fill)
+def onMousePress(app, mouseX, mouseY):
+    app.cursorx = mouseX
+    app.cursory = mouseY
+def drawLabels(app):
+    drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
+    drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
+    drawLabel('Amazon (AMZN)', 160, 315, align='center', size=17)
+    drawLabel('J.P. Morgan (JPM)', 160, 395, align='center', size=17)
+    drawLabel('Tesla (TSLA)', 160, 475, align='center', size=17)
+    drawLabel('Broadcom Inc (AVGO)', 160, 555, align='center', size=17)
+    drawLabel('Eli Lilly and Co (LLY)', 160, 635, align='center', size=17)
+    drawLabel('Berkshire Hathaway', 160, 704, align='center', size=15)
+    drawLabel('(BRK-B)', 160, 725, align='center', size=15)
 
 def getOpenHighLowCloseVol(app, stock, startY, startM, startD, endY, endM, endD):
     result = dict()
@@ -122,3 +169,7 @@ def getOpenHighLowCloseVol(app, stock, startY, startM, startD, endY, endM, endD)
         result[str(index)[:10]] = values[counter]
         counter += 1
     return result
+
+def main():
+    runApp(app)
+main()
