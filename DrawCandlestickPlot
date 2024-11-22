@@ -37,12 +37,12 @@ def redrawAll(app):
     drawAxis(app)
     drawCandles(app)
 def drawAxis(app):
-    drawLine(300, 475, 850, 475)
-    drawLine(300, 475, 300, 175)
+    drawLine(350, 475, 900, 475)
+    drawLine(350, 475, 350, 175)
 
 def drawPrices(app):
-    drawLabel(f'{int(min(app.lows))}', 280, 470)
-    drawLabel(f'{int(max(app.highs))}', 280, 180)
+    drawLabel(f'{int(min(app.lows))}', 330, 470)
+    drawLabel(f'{int(max(app.highs))}', 330, 180)
 
 def drawCandles(app):
     drawPrices(app)
