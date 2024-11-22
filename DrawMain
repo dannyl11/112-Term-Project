@@ -10,6 +10,8 @@ class Button:
         self.width = width
         self.height = height
         self.fill = fill
+        self.opacity = 100
+        self.selected = -1 #-1 not selected, 1 selected
 def createButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
     app.buttons.append(msft)
@@ -135,13 +137,13 @@ def drawPrices(app):
 def drawButtons(app):
     createButtons(app)
     drawLabels(app)
-    print(app.buttons)
     for button in app.buttons:
-        drawRect(button.x, button.y, button.width, button.height, border='black', 
-                borderWidth=5, fill=button.fill)
+            drawRect(button.x, button.y, button.width, button.height, border='black', 
+                borderWidth=5, fill=None)
+
 def onMousePress(app, mouseX, mouseY):
-    app.cursorx = mouseX
-    app.cursory = mouseY
+    for button in app.buttons:
+        pass
 def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
     drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
@@ -169,6 +171,12 @@ def getOpenHighLowCloseVol(app, stock, startY, startM, startD, endY, endM, endD)
         result[str(index)[:10]] = values[counter]
         counter += 1
     return result
+
+def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
+    buttonRightX = buttonLeftX + width
+    buttonBotY = buttonTopY + height
+    return (buttonTopY <= mouseY <= buttonBotY and 
+            buttonLeftX <= mouseX <= buttonRightX)
 
 def main():
     runApp(app)
