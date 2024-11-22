@@ -22,7 +22,7 @@ def getOpenHighLowCloseVol(ticker, startY, startM, startD, endY, endM, endD):
 def onAppStart(app):
     app.height = 800
     app.width = 1000
-    app.data = getOpenHighLowCloseVol('AAPL', 2023, 3, 17, 2023, 4, 17)
+    app.data = getOpenHighLowCloseVol('AAPL', 2023, 11, 21, 2024, 11, 21)
     app.datapoints = []
     for date in app.data:
         app.datapoints.append(app.data[date])
@@ -34,8 +34,14 @@ def onAppStart(app):
         app.highs.append(high)
         app.lows.append(low)
 def redrawAll(app):
+    drawAxis(app)
+    drawCandles(app)
+
+def drawAxis(app):
     drawLine(300, 475, 850, 475)
     drawLine(300, 475, 300, 175)
+
+def drawCandles(app):
     priceMin = min(app.lows) - 5
     priceMax = max(app.highs) + 5
     yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
