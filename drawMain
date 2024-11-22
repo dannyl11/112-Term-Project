@@ -1,0 +1,124 @@
+from cmu_graphics import *
+import pandas as pd
+import pandas_datareader.data as web
+import datetime as dt
+
+def onAppStart(app):
+    app.height = 800
+    app.width = 1000
+    app.cx = app.width/2
+    app.cy = app.height/2
+    app.screen = 0 #0 for title, 1 for main, 
+    app.stock = 'MSFT'
+    app.data = getOpenHighLowCloseVol(app, app.stock, 2024, 6, 21, 2024, 11, 21)
+    app.datapoints = []
+    for date in app.data:
+        app.datapoints.append(app.data[date])
+    app.highs = []
+    app.lows = []
+    for datapoint in app.datapoints:
+        high = datapoint[1]
+        low = datapoint[2]
+        app.highs.append(high)
+        app.lows.append(low)
+def drawAxis(app):
+    drawLine(300, 475, 850, 475)
+    drawLine(300, 475, 300, 175)
+def drawLogo(app, cx, cy, size):
+    textCenter = cx+size - (15/35)*size
+    rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
+    rectGLeft, rectRLeft = (cx-((15/35)*size) - (42.5/20)*size, 
+                            cx-((15/35)*size) - (32.5/20)*size)
+    triHeight, triWidth = 0.3*size, (10.5/20)*size
+    triGMid, triRMid = ((rectGLeft + rectGLeft+rectWidth)/2, 
+                        (rectRLeft + rectRLeft+rectWidth)/2)
+    rBaseY, rLeftX = cy + (7/20)*size, triRMid - triWidth/2
+    gBaseY, gLeftX = cy - (7/20)*size + 1, triGMid - triWidth/2
+    drawLabel('2 Finance', textCenter, cy, bold=True, fill='green', size=size, 
+              font='cinzel')
+    drawRect(rectGLeft, rectTop, rectWidth, rectHeight, fill='green')
+    drawPolygon(gLeftX, gBaseY, triGMid, gBaseY-triHeight, gLeftX+triWidth, gBaseY, 
+                fill='green')
+    drawRect(rectRLeft, rectTop, rectWidth, rectHeight, fill='red')
+    drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
+                fill='red')
+def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD):
+    result = dict()
+    startDate = dt.datetime(startY, startM, startD)
+    endDate = dt.datetime(endY, endM, endD)
+    temp = web.DataReader(ticker,'stooq', startDate, endDate)
+    df = temp.sort_index(ascending=True)
+    try:
+        df['Volume'] = df['Volume'].round().astype(int)
+    except:
+        pass
+    values = df.values.tolist()
+    counter = 0
+    for index, row in df.iterrows():
+        result[str(index)[:10]] = values[counter]
+        counter += 1
+    return result
+def redrawAll(app):
+    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawAxis(app)
+    drawLogo(app, 150, 40, 40)
+    if app.stock == None:
+        pass
+    else:
+        drawLabel(f'{app.stock}', app.cx, 40, fill='white', size=40)
+        drawAxis(app)
+        drawCandles(app)
+def drawCandles(app):
+    drawPrices(app)
+    priceMin = min(app.lows) - 5
+    priceMax = max(app.highs) + 5
+    yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
+    graphX = 300
+    graphLength = 850-300
+    graphY = 475
+    candleWidth = graphLength/len(app.datapoints) - (graphLength/len(app.datapoints)/10)
+    candleX = graphX + candleWidth/2 + 5
+    for datapoint in app.datapoints:
+        open = datapoint[0]
+        high = datapoint[1]
+        low = datapoint[2]
+        close = datapoint[3]
+        volume = datapoint[4]
+        openY = graphY-((open-priceMin)/yScale)
+        highY = graphY-((high-priceMin)/yScale)
+        lowY = graphY-((low-priceMin)/yScale)
+        closeY = graphY-((close-priceMin)/yScale)
+        if close > open:
+            drawLine(candleX, highY, candleX, closeY)
+            drawLine(candleX, lowY, candleX, openY)
+            drawRect(candleX-candleWidth/2, closeY, candleWidth, abs(closeY-openY), fill = 'green')
+            candleX += graphLength/len(app.datapoints)
+        elif open > close:
+            drawLine(candleX, highY, candleX, openY)
+            drawLine(candleX, lowY, candleX, closeY)
+            drawRect(candleX-candleWidth/2, openY, candleWidth, abs(closeY-openY), fill = 'red')
+            candleX += graphLength/len(app.datapoints)
+def drawPrices(app):
+    drawLabel(f'{min(app.lows)}', 270, 470)
+    drawLabel(f'{max(app.highs)}', 270, 180)
+
+def main():
+    runApp(app)
+main()
+
+def getOpenHighLowCloseVol(app, stock, startY, startM, startD, endY, endM, endD):
+    result = dict()
+    startDate = dt.datetime(startY, startM, startD)
+    endDate = dt.datetime(endY, endM, endD)
+    temp = web.DataReader(stock,'stooq', startDate, endDate)
+    df = temp.sort_index(ascending=True)
+    try:
+        df['Volume'] = df['Volume'].round().astype(int)
+    except:
+        pass
+    values = df.values.tolist()
+    counter = 0
+    for index, row in df.iterrows():
+        result[str(index)[:10]] = values[counter]
+        counter += 1
+    return result
