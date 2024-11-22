@@ -1,4 +1,7 @@
 from cmu_graphics import *
+import pandas as pd
+import pandas_datareader.data as web
+import datetime as dt
 
 def onAppStart(app):
     app.height = 800
@@ -6,13 +9,10 @@ def onAppStart(app):
     app.cx = app.width/2
     app.cy = app.height/2
     app.loadbar = 1
-    app.screen = 0 #0 for title, 1 for main
+    app.screen = 0 #0 for title, 1 for main, 
 
 def redrawAll(app):
-    if app.screen == 0:
-        drawTitleScreen(app)
-    if app.screen == 1:
-        drawLabel('Main Screen...', app.cx, app.cy)
+    drawTitleScreen(app)
 
 def drawTitleScreen(app):
     drawRect(0, 0, app.width, app.height, fill='black')
@@ -52,23 +52,14 @@ def drawLoadingBar(app):
     drawLabel('Loading Data...', app.cx, barY - 42.5, align='center', size = 16, fill = 'white')
     drawRect(loadbarLeft, loadbarTop, app.loadbar, barHeight, border='white', fill='cyan')
 
+def drawMainScreen(app):
+    drawRect(0, 0, app.width, app.height, opacity=75)
 def onStep(app):
     if app.loadbar <= (5/8)*app.width:
-        app.loadbar += 5
-
+        app.loadbar += 15
 def onKeyPress(app, key):
     if app.screen == 0:
         app.screen = 1
-
-def onMousePress(app, mouseX, mouseY):
-    app.cursorx = mouseX
-    app.cursory = mouseY
-
-def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
-    buttonRightX = buttonLeftX + width
-    buttonBotY = buttonTopY + height
-    return (buttonTopY <= mouseY <= buttonBotY and 
-            buttonLeftX <= mouseX <= buttonRightX)
 
 def main():
     runApp()
