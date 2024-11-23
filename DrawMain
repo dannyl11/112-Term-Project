@@ -45,8 +45,8 @@ def createButtons(app):
     brk = Button('BRK-B', 60, 680, 200, 70, None)
     app.buttons.append(brk)
 def drawAxis(app):
-    drawLine(350, 475, 900, 475)
-    drawLine(350, 475, 350, 175)
+    drawLine(350, 505, 900, 505)
+    drawLine(350, 505, 350, 205)
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -83,6 +83,7 @@ def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD
     return result
 def redrawAll(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawDateButtons(app)
     drawAxis(app)
     drawLogo(app, 160, 40, 40)
     drawButtons(app)
@@ -100,7 +101,7 @@ def drawCandles(app):
     yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
     graphX = 350
     graphLength = 850-300
-    graphY = 475
+    graphY = 505
     candleWidth = graphLength/len(app.datapoints) - (graphLength/len(app.datapoints)/10)
     candleX = graphX + candleWidth/2 + 5
     for datapoint in app.datapoints:
@@ -124,8 +125,8 @@ def drawCandles(app):
             drawRect(candleX-candleWidth/2, openY, candleWidth, abs(closeY-openY), fill = 'red')
             candleX += graphLength/len(app.datapoints)
 def drawPrices(app):
-    drawLabel(f'{int(min(app.lows))}', 330, 470)
-    drawLabel(f'{int(max(app.highs))}', 330, 180)
+    drawLabel(f'{int(min(app.lows))}', 330, 500)
+    drawLabel(f'{int(max(app.highs))}', 330, 210)
 def drawButtons(app):
     createButtons(app)
     drawLabels(app)
@@ -188,6 +189,14 @@ def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
     buttonBotY = buttonTopY + height
     return (buttonTopY <= mouseY <= buttonBotY and 
             buttonLeftX <= mouseX <= buttonRightX)
+
+def drawDateButtons(app):
+    drawRect(450, 125, 100, 50, fill=None, border='black', borderWidth=5)
+    drawLabel('3M',500, 150, size=22)
+    drawRect(590, 125, 100, 50, fill=None, border='black', borderWidth=5)
+    drawLabel('1M', 640, 150, size=22)
+    drawRect(730, 125, 100, 50, fill=None, border='black', borderWidth=5)
+    drawLabel('1W', 780, 150, size=22)
 
 def main():
     runApp(app)
