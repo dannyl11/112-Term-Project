@@ -92,7 +92,7 @@ def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD
 def redrawAll(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawAxis(app)
-    drawLogo(app, 150, 40, 40)
+    drawLogo(app, 160, 40, 40)
     drawButtons(app)
     if app.stock == None:
         drawLabel('Choose a stock', app.cx, 40, fill='white', size=40)
