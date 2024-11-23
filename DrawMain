@@ -10,8 +10,23 @@ class Button:
         self.width = width
         self.height = height
         self.fill = fill
-        self.opacity = 100
         self.selected = -1 #-1 not selected, 1 selected
+    def __repr__(self):
+        return f'{self.stock} | {self.selected}'
+def onAppStart(app):
+    app.height = 800
+    app.width = 1000
+    app.cx = app.width/2
+    app.cy = app.height/2
+    app.screen = 0 #0 for title, 1 for main, 
+    app.stock = None
+    app.datapoints = []
+    app.highs = []
+    app.lows = []
+    app.data = None
+    app.buttons = []
+    app.loading = 0
+
 def createButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
     app.buttons.append(msft)
@@ -29,29 +44,6 @@ def createButtons(app):
     app.buttons.append(lly)
     brk = Button('BRK-B', 60, 680, 200, 70, None)
     app.buttons.append(brk)
-
-def onAppStart(app):
-    app.height = 800
-    app.width = 1000
-    app.cx = app.width/2
-    app.cy = app.height/2
-    app.screen = 0 #0 for title, 1 for main, 
-    app.stock = 'BRK-B'
-    app.datapoints = []
-    app.highs = []
-    app.lows = []
-    try:
-        app.data = getOpenHighLowCloseVol(app, app.stock, 2024, 6, 21, 2024, 11, 21)
-        for date in app.data:
-            app.datapoints.append(app.data[date])
-            for datapoint in app.datapoints:
-                high = datapoint[1]
-                low = datapoint[2]
-                app.highs.append(high)
-                app.lows.append(low)
-    except:
-        pass
-    app.buttons = []
 def drawAxis(app):
     drawLine(350, 475, 900, 475)
     drawLine(350, 475, 350, 175)
@@ -138,12 +130,31 @@ def drawButtons(app):
     createButtons(app)
     drawLabels(app)
     for button in app.buttons:
-            drawRect(button.x, button.y, button.width, button.height, border='black', 
+            if button.selected == -1:
+                drawRect(button.x, button.y, button.width, button.height, border='black', 
                 borderWidth=5, fill=None)
+            elif button.selected == 1:
+                drawRect(button.x, button.y, button.width, button.height, border='black', 
+                borderWidth=5, fill="green", opacity=40)
 
 def onMousePress(app, mouseX, mouseY):
     for button in app.buttons:
-        pass
+        if isIn(app, mouseX, mouseY, button.x, button.y, button.width, button.height):
+            app.stock = button.stock
+            try:
+                app.data = getOpenHighLowCloseVol(app, app.stock, 2024, 6, 21, 2024, 11, 21)
+                app.datapoints = []
+                app.highs = []
+                app.lows = []
+                for date in app.data:
+                    app.datapoints.append(app.data[date])
+                    for datapoint in app.datapoints:
+                        high = datapoint[1]
+                        low = datapoint[2]
+                        app.highs.append(high)
+                        app.lows.append(low)
+            except:
+                pass
 def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
     drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
