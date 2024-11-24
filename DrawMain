@@ -30,7 +30,23 @@ def onAppStart(app):
     app.stockButtons = []
     app.loading = 0
     app.todayM, app.todayD, app.todayY = getTodayDate(app)
-
+def drawMain(app):
+    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawDateButtons(app)
+    drawAxis(app)
+    drawLogo(app, 160, 45, 35)
+    drawButtons(app)
+    if app.stock == None:
+        drawLabel('Choose a stock', app.cx, 45, fill='white', size=50)
+        pass
+    else:
+        drawLabel(f'{app.stock}', app.cx, 45, fill='white', size=55)
+        drawAxis(app)
+        drawCandles(app)
+        drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, 
+                border='green', borderWidth=5)
+        drawLabel('Analysis', 900, 45, fill='white', size=22)
+        drawStats(app)
 def createStockButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
     app.stockButtons.append(msft)
@@ -49,8 +65,8 @@ def createStockButtons(app):
     brk = Button('BRK-B', 60, 680, 200, 70, None)
     app.stockButtons.append(brk)
 def drawAxis(app):
-    drawLine(350, 505, 900, 505)
-    drawLine(350, 505, 350, 205)
+    drawLine(350, 605, 950, 605)
+    drawLine(350, 605, 350, 205)
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -85,31 +101,18 @@ def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD
         result[str(index)[:10]] = values[counter]
         counter += 1
     return result
+
 def redrawAll(app):
-    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
-    drawDateButtons(app)
-    drawAxis(app)
-    drawLogo(app, 160, 45, 35)
-    drawButtons(app)
-    if app.stock == None:
-        drawLabel('Choose a stock', app.cx, 45, fill='white', size=50)
-        pass
-    else:
-        drawLabel(f'{app.stock}', app.cx, 45, fill='white', size=55)
-        drawAxis(app)
-        drawCandles(app)
-        drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, 
-                border='green', borderWidth=5)
-        drawLabel('Analysis', 900, 45, fill='white', size=22)
+    drawMain(app)
         
 def drawCandles(app):
     drawPrices(app)
     priceMin = min(app.lows) - 5
     priceMax = max(app.highs) + 5
-    yScale = abs(priceMax-priceMin)/250 #price each pixel in y-axis represents
+    yScale = abs(priceMax-priceMin)/400 #price each pixel in y-axis represents
     graphX = 350
-    graphLength = 850-300
-    graphY = 505
+    graphLength = 950-350
+    graphY = 605
     candleWidth = (graphLength/len(app.datapoints) - 
                    (graphLength/len(app.datapoints)/10))
     candleX = graphX + candleWidth/2 + 5
@@ -136,7 +139,7 @@ def drawCandles(app):
                      abs(closeY-openY), fill = 'red')
             candleX += graphLength/len(app.datapoints)
 def drawPrices(app):
-    drawLabel(f'{int(min(app.lows))}', 330, 500)
+    drawLabel(f'{int(min(app.lows))}', 330, 600)
     drawLabel(f'{int(max(app.highs))}', 330, 210)
 def drawButtons(app):
     createStockButtons(app)
@@ -144,12 +147,14 @@ def drawButtons(app):
     for button in app.stockButtons:
             if button.selected == -1:
                 drawRect(button.x, button.y, button.width, button.height, border='black', 
-                borderWidth=5, fill=None)
+                borderWidth=4, fill=None)
             elif button.selected == 1:
                 drawRect(button.x, button.y, button.width, button.height, border='black', 
-                borderWidth=5, fill="green", opacity=40)
+                borderWidth=4, fill="green", opacity=40)
 def onMousePress(app, mouseX, mouseY):
-    if isIn(app, mouseX, mouseY, 380, 125, 100, 50): #1 year
+    if isIn(app, mouseX, mouseY, 900, 45, 150, 60):
+        app.screen = 2
+    if isIn(app, mouseX, mouseY, 405, 125, 100, 50): #1 year
         startM, startD, startY = getStartDate(0, 12)
         try:
             app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
@@ -167,7 +172,7 @@ def onMousePress(app, mouseX, mouseY):
                     app.lows.append(low)
         except:
             pass
-    elif isIn(app, mouseX, mouseY, 513+(1/3), 125, 100, 50): #6M
+    elif isIn(app, mouseX, mouseY, 538+(1/3), 125, 100, 50): #6M
         startM, startD, startY = getStartDate(0, 6)
         try:
             app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
@@ -185,7 +190,7 @@ def onMousePress(app, mouseX, mouseY):
                     app.lows.append(low)
         except:
             pass
-    elif isIn(app, mouseX, mouseY, 646+(2/3), 125, 100, 50): #1M
+    elif isIn(app, mouseX, mouseY, 671+(2/3), 125, 100, 50): #1M
         startM, startD, startY = getStartDate(0, 1)
         try:
             app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
@@ -203,7 +208,7 @@ def onMousePress(app, mouseX, mouseY):
                     app.lows.append(low)
         except:
             pass
-    elif isIn(app, mouseX, mouseY, 780, 125, 100, 50): #1W
+    elif isIn(app, mouseX, mouseY, 805, 125, 100, 50): #1W
         startM, startD, startY = getStartDate(1, 0)
         try:
             app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
@@ -288,15 +293,31 @@ def getStartDate(weeks, months):
     elif months == 0:
         result = str(today - relativedelta(weeks=weeks))
         return (int(result[5:7]), int(result[8:]), int(result[:4]))
-def drawDateButtons(app):
-    drawRect(380, 125, 100, 50, fill=None, border='black', borderWidth=5)
-    drawLabel('1Y', 430, 150, size=22)
-    drawRect(513+(1/3), 125, 100, 50, fill=None, border='black', borderWidth=5)
-    drawLabel('6M', 563+(1/3), 150, size=22)
-    drawRect(646+(2/3), 125, 100, 50, fill=None, border='black', borderWidth=5)
-    drawLabel('1M', 696+(2/3), 150, size=22)
-    drawRect(780, 125, 100, 50, fill=None, border='black', borderWidth=5)
-    drawLabel('1W', 830, 150, size=22)
+def drawDateButtons(app): #950 to 350
+    drawRect(405, 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+    drawLabel('1Y', 455, 150, size=22)
+    drawRect(538+(1/3), 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+    drawLabel('6M', 588+(1/3), 150, size=22)
+    drawRect(671+(2/3), 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+    drawLabel('1M', 721+(2/3), 150, size=22)
+    drawRect(805, 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+    drawLabel('1W', 855, 150, size=22)
+
+def drawStats(app): #350 - 950
+    drawRect(372.5, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
+    drawRect(565, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
+    drawRect(757.5, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
+    drawLabel('Volume:', 457.5, 665, size=20)
+    drawLabel('Market Cap:', 650, 665, size=20)
+    drawLabel('PE Ratio (TTM):', 842.5, 665, size=20)
+    stock = yf.Ticker(app.stock)
+    vol = stock.info['volume'] / 10**6 #in millions
+    mc = stock.info['marketCap'] / 10**12 #in trillions
+    pe = stock.info['trailingPE']
+    drawLabel(f'{pythonRound(vol, 1)} M', 457.5, 700, size=20)
+    drawLabel(f'{pythonRound(mc, 2)} T', 650, 700, size=20)
+    drawLabel(f'{pythonRound(pe, 2)}', 842.5, 700, size=20)
+
 def main():
     runApp(app)
 main()
