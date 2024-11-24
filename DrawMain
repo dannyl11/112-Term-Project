@@ -85,15 +85,18 @@ def redrawAll(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawDateButtons(app)
     drawAxis(app)
-    drawLogo(app, 160, 40, 40)
+    drawLogo(app, 160, 40, 35)
     drawButtons(app)
     if app.stock == None:
-        drawLabel('Choose a stock', app.cx, 40, fill='white', size=40)
+        drawLabel('Choose a stock', app.cx, 40, fill='white', size=50)
         pass
     else:
-        drawLabel(f'{app.stock}', app.cx, 40, fill='white', size=40)
+        drawLabel(f'{app.stock}', app.cx, 40, fill='white', size=55)
         drawAxis(app)
         drawCandles(app)
+        drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, border='green',
+                borderWidth=5)
+        drawLabel('Analysis', 900, 45, fill='white', size=22)
 def drawCandles(app):
     drawPrices(app)
     priceMin = min(app.lows) - 5
