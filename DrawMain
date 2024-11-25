@@ -5,6 +5,7 @@ import datetime as dt
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
+
 class Button:
     def __init__(self, stock, x, y, width, height, fill):
         self.stock = stock
@@ -14,8 +15,17 @@ class Button:
         self.height = height
         self.fill = fill
         self.selected = False
-    def __repr__(self):
-        return f'{self.stock} | {self.selected}'
+class dateButton:
+    def __init__(self, weeks, months, x, y, width, height, selected=False):
+        self.weeksBack = weeks
+        self.monthsBack = months
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.fill = None
+        self.selected = selected
+
 def onAppStart(app):
     app.height = 800
     app.width = 1000
@@ -28,8 +38,10 @@ def onAppStart(app):
     app.lows = []
     app.data = None
     app.stockButtons = []
+    app.dateButtons = []
     app.loading = 0
     app.todayM, app.todayD, app.todayY = getTodayDate(app)
+
 def drawMain(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawDateButtons(app)
@@ -155,78 +167,28 @@ def drawButtons(app):
 def onMousePress(app, mouseX, mouseY):
     if isIn(app, mouseX, mouseY, 900, 45, 150, 60):
         app.screen = 2
-    if isIn(app, mouseX, mouseY, 405, 125, 100, 50): #1 year
-        startM, startD, startY = getStartDate(0, 12)
-        try:
-            app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
-                                                    startM, startD, app.todayY, 
-                                                    app.todayM, app.todayD)
-            app.datapoints = []
-            app.highs = []
-            app.lows = []
-            for date in app.data:
-                app.datapoints.append(app.data[date])
-                for datapoint in app.datapoints:
-                    high = datapoint[1]
-                    low = datapoint[2]
-                    app.highs.append(high)
-                    app.lows.append(low)
-        except:
-            pass
-    elif isIn(app, mouseX, mouseY, 538+(1/3), 125, 100, 50): #6M
-        startM, startD, startY = getStartDate(0, 6)
-        try:
-            app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
-                                                    startM, startD, app.todayY, 
-                                                    app.todayM, app.todayD)
-            app.datapoints = []
-            app.highs = []
-            app.lows = []
-            for date in app.data:
-                app.datapoints.append(app.data[date])
-                for datapoint in app.datapoints:
-                    high = datapoint[1]
-                    low = datapoint[2]
-                    app.highs.append(high)
-                    app.lows.append(low)
-        except:
-            pass
-    elif isIn(app, mouseX, mouseY, 671+(2/3), 125, 100, 50): #1M
-        startM, startD, startY = getStartDate(0, 1)
-        try:
-            app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
-                                                    startM, startD, app.todayY, 
-                                                    app.todayM, app.todayD)
-            app.datapoints = []
-            app.highs = []
-            app.lows = []
-            for date in app.data:
-                app.datapoints.append(app.data[date])
-                for datapoint in app.datapoints:
-                    high = datapoint[1]
-                    low = datapoint[2]
-                    app.highs.append(high)
-                    app.lows.append(low)
-        except:
-            pass
-    elif isIn(app, mouseX, mouseY, 805, 125, 100, 50): #1W
-        startM, startD, startY = getStartDate(1, 0)
-        try:
-            app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
-                                                startM, startD,
-                                                app.todayY, app.todayM, app.todayD)
-            app.datapoints = []
-            app.highs = []
-            app.lows = []
-            for date in app.data:
-                app.datapoints.append(app.data[date])
-                for datapoint in app.datapoints:
-                    high = datapoint[1]
-                    low = datapoint[2]
-                    app.highs.append(high)
-                    app.lows.append(low)
-        except:
-            pass
+    for db in app.dateButtons:
+        if isIn(app, mouseX, mouseY, db.x, db.y, db.width, db.height): #1 year
+            startM, startD, startY = getStartDate(db.weeksBack, db.monthsBack)
+            try:
+                app.data = getOpenHighLowCloseVol(app, app.stock, startY, 
+                                                        startM, startD, app.todayY, 
+                                                        app.todayM, app.todayD)
+                app.datapoints = []
+                app.highs = []
+                app.lows = []       
+                for date in app.data:
+                    app.datapoints.append(app.data[date])
+                    for datapoint in app.datapoints:
+                        high = datapoint[1]
+                        low = datapoint[2]
+                        app.highs.append(high)
+                        app.lows.append(low)
+            except:
+                pass
+            for others in app.dateButtons: #toggle selected button
+                others.selected = False
+            db.selected = not db.selected
     for button in app.stockButtons:
         if isIn(app, mouseX, mouseY, button.x, button.y, button.width, button.height):
             app.stock = button.stock
@@ -246,9 +208,11 @@ def onMousePress(app, mouseX, mouseY):
                         app.lows.append(low)
             except:
                 pass
-            for others in app.stockButtons: #toggle selected button (doesn't work)
+            for others in app.stockButtons: #toggle selected button
                 others.selected = False
             button.selected = not button.selected
+            for db in app.dateButtons:
+                db.selected = False
 
 def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
@@ -298,16 +262,27 @@ def getStartDate(weeks, months):
     elif months == 0:
         result = str(today - relativedelta(weeks=weeks))
         return (int(result[5:7]), int(result[8:]), int(result[:4]))
-def drawDateButtons(app): #950 to 350
-    drawRect(405, 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+def createDateButtons(app): #950 to 350
+    oneY = dateButton(0, 12, 405, 125, 100, 50)
+    app.dateButtons.append(oneY)
+    sixM = dateButton(0, 6, 538+(1/3), 125, 100, 50)
+    app.dateButtons.append(sixM)
+    oneM = dateButton(0, 1, 671+(2/3), 125, 100, 50)
+    app.dateButtons.append(oneM)
+    oneW = dateButton(1, 0, 805, 125, 100, 50)
+    app.dateButtons.append(oneW)
+
+def drawDateButtons(app):
+    createDateButtons(app)
+    for button in app.dateButtons:
+        drawRect(button.x, button.y, button.width, button.height, fill=button.fill,
+                 border='black', borderWidth=2.5)
+        if button.selected == True and app.stock != None:
+            drawRect(button.x, button.y, button.width, button.height, fill='green',
+                 border='black', borderWidth=2.5)
     drawLabel('1Y', 455, 150, size=22)
-    drawRect(538+(1/3), 125, 100, 50, fill=None, border='black', borderWidth=2.5)
     drawLabel('6M', 588+(1/3), 150, size=22)
-    fillz = 'green' if app.stock != None else None
-    drawRect(671+(2/3), 125, 100, 50, fill=fillz, border='black', borderWidth=2.5,
-                                      opacity=100)
     drawLabel('1M', 721+(2/3), 150, size=22)
-    drawRect(805, 125, 100, 50, fill=None, border='black', borderWidth=2.5)
     drawLabel('1W', 855, 150, size=22)
 
 def drawStats(app): #350 - 950
