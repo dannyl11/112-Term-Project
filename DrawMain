@@ -14,9 +14,9 @@ class Button:
         self.width = width
         self.height = height
         self.fill = fill
-        self.selected = False
+        self.selected = -1
 class dateButton:
-    def __init__(self, weeks, months, x, y, width, height, selected=False):
+    def __init__(self, weeks, months, x, y, width, height, selected=-1):
         self.weeksBack = weeks
         self.monthsBack = months
         self.x = x
@@ -187,8 +187,8 @@ def onMousePress(app, mouseX, mouseY):
             except:
                 pass
             for others in app.dateButtons: #toggle selected button
-                others.selected = False
-            db.selected = not db.selected
+                others.selected = -1
+            db.selected = -db.selected
     for button in app.stockButtons:
         if isIn(app, mouseX, mouseY, button.x, button.y, button.width, button.height):
             app.stock = button.stock
@@ -209,10 +209,10 @@ def onMousePress(app, mouseX, mouseY):
             except:
                 pass
             for others in app.stockButtons: #toggle selected button
-                others.selected = False
-            button.selected = not button.selected
+                others.selected = -1
+            button.selected = -button.selected
             for db in app.dateButtons:
-                db.selected = False
+                db.selected = -1
 
 def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
