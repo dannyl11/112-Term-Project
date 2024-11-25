@@ -42,7 +42,7 @@ def drawAnalysis(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawLogo(app, 160, 40, 40)
     drawButtons(app)
-    drawLabel(f'{app.stock}', app.cx, 40, fill='white', size=40)
+    drawLabel(f'{app.stock}', 629.5, 140, size=40)
     drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, border='green',
                 borderWidth=5)
     drawLabel('Chart', 900, 45, fill='white', size=22)
