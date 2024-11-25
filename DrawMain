@@ -167,7 +167,7 @@ def drawButtons(app):
 
         
 def onMousePress(app, mouseX, mouseY):
-    if isIn(app, mouseX, mouseY, 900, 45, 150, 60):
+    if isIn(app, mouseX, mouseY, 825, 15, 150, 60):
         app.screen = 2
     for db in app.dateButtons:
         if isIn(app, mouseX, mouseY, db.x, db.y, db.width, db.height): #1 year
