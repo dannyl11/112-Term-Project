@@ -78,7 +78,9 @@ def createStockButtons(app):
     app.stockButtons.append(brk)
 def drawAxis(app):
     drawLine(350, 605, 950, 605)
+    drawLabel('Price', 327.5, 405, rotateAngle=-90, size=18)
     drawLine(350, 605, 350, 205)
+    drawLabel(f'{app.todayM}-{app.todayD}', 930, 620, size=18)
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -151,8 +153,8 @@ def drawCandles(app):
                      abs(closeY-openY), fill = 'red')
             candleX += graphLength/len(app.datapoints)
 def drawPrices(app):
-    drawLabel(f'{int(min(app.lows))}', 330, 600)
-    drawLabel(f'{int(max(app.highs))}', 330, 210)
+    drawLabel(f'{int(min(app.lows))}', 327.5, 597.5, size=18)
+    drawLabel(f'{int(max(app.highs))}', 327.5, 212.5, size=18)
 def drawButtons(app):
     createStockButtons(app)
     for button in app.stockButtons:
