@@ -13,7 +13,7 @@ class Button:
         self.width = width
         self.height = height
         self.fill = fill
-        self.selected = -1 #-1 not selected, 1 selected
+        self.selected = False
     def __repr__(self):
         return f'{self.stock} | {self.selected}'
 def onAppStart(app):
@@ -143,14 +143,15 @@ def drawPrices(app):
     drawLabel(f'{int(max(app.highs))}', 330, 210)
 def drawButtons(app):
     createStockButtons(app)
-    drawLabels(app)
     for button in app.stockButtons:
-            if button.selected == -1:
-                drawRect(button.x, button.y, button.width, button.height, border='black', 
-                borderWidth=4, fill=None)
-            elif button.selected == 1:
-                drawRect(button.x, button.y, button.width, button.height, border='black', 
-                borderWidth=4, fill="green", opacity=40)
+        drawRect(button.x, button.y, button.width, button.height, 
+                    border='black', borderWidth=4, fill=None)
+        if button.selected == True:
+            drawRect(button.x, button.y, button.width, button.height, 
+                    border='black', borderWidth=4, fill='green')
+    drawLabels(app)
+
+        
 def onMousePress(app, mouseX, mouseY):
     if isIn(app, mouseX, mouseY, 900, 45, 150, 60):
         app.screen = 2
@@ -245,6 +246,10 @@ def onMousePress(app, mouseX, mouseY):
                         app.lows.append(low)
             except:
                 pass
+            for others in app.stockButtons: #toggle selected button (doesn't work)
+                others.selected = False
+            button.selected = not button.selected
+
 def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
     drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
@@ -298,7 +303,9 @@ def drawDateButtons(app): #950 to 350
     drawLabel('1Y', 455, 150, size=22)
     drawRect(538+(1/3), 125, 100, 50, fill=None, border='black', borderWidth=2.5)
     drawLabel('6M', 588+(1/3), 150, size=22)
-    drawRect(671+(2/3), 125, 100, 50, fill=None, border='black', borderWidth=2.5)
+    fillz = 'green' if app.stock != None else None
+    drawRect(671+(2/3), 125, 100, 50, fill=fillz, border='black', borderWidth=2.5,
+                                      opacity=100)
     drawLabel('1M', 721+(2/3), 150, size=22)
     drawRect(805, 125, 100, 50, fill=None, border='black', borderWidth=2.5)
     drawLabel('1W', 855, 150, size=22)
