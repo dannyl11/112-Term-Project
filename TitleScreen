@@ -21,9 +21,13 @@ def drawTitleScreen(app):
     if app.loadbar < (5/8*app.width):
         drawLoadingBar(app)
     if app.loadbar >= (5/8)*app.width:
-        drawRect(app.cx-125,(13/16)*app.height-25, 250, 50, fill='green', opacity=50, 
+        drawRect(225,(13/16)*app.height-25, 250, 50, fill='green', opacity=50, 
                  border='green', borderWidth=5)
-        drawLabel('Press any key to view data', app.cx, (13/16)*app.height, size=16, fill='white')
+        drawLabel('View Market Data', 350, (13/16)*app.height, size=16, fill='white')
+        drawRect(525, (13/16)*app.height-25, 250, 50, fill='green', opacity=50,
+                 border='green', borderWidth=5)
+        drawLabel('Track Portfolio Performance', 650, (13/16)*app.height, 
+                  size=16, fill='white')
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
     rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
@@ -60,6 +64,12 @@ def onStep(app):
 def onKeyPress(app, key):
     if app.screen == 0:
         app.screen = 1
+
+def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
+    buttonRightX = buttonLeftX + width
+    buttonBotY = buttonTopY + height
+    return (buttonTopY <= mouseY <= buttonBotY and 
+            buttonLeftX <= mouseX <= buttonRightX)
 
 def main():
     runApp()
