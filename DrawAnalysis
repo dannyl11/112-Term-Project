@@ -2,6 +2,10 @@ from cmu_graphics import *
 import pandas as pd
 import pandas_datareader.data as web
 import datetime as dt
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
+
 class Button:
     def __init__(self, stock, x, y, width, height, fill):
         self.stock = stock
@@ -35,7 +39,7 @@ def onAppStart(app):
     app.data = None
     app.stockButtons = []
     app.statButtons = []
-    app.loading = 0
+    app.loading = 0 
     app.metric = None
 
 def drawAnalysis(app):
@@ -43,12 +47,17 @@ def drawAnalysis(app):
     drawLogo(app, 160, 40, 40)
     drawButtons(app)
     drawLabel(f'{app.stock}', 629.5, 140, size=40)
-    drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, border='green',
-                borderWidth=5)
-    drawLabel('Chart', 900, 45, fill='white', size=22)
+    drawRect(725, 45, 150, 60, align='center', fill='green', opacity=50, 
+                border='green', borderWidth=5)
+    drawLabel('Market Data', 725, 45, fill='white', size=22)
+    drawRect(900, 45, 150, 60, align='center', fill='green', opacity=50, 
+                border='green', borderWidth=5)
+    drawLabel('Portfolio', 900, 45, fill='white', size=22)
     drawStatButtons(app)
     drawRating(app)
     drawHeadlines(app)
+
+
 def createButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
     app.stockButtons.append(msft)
@@ -101,6 +110,7 @@ def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD
         result[str(index)[:10]] = values[counter]
         counter += 1
     return result
+
 def redrawAll(app):
     drawAnalysis(app)
 
@@ -135,6 +145,8 @@ def drawStatButtons(app):
 
 def onMousePress(app, mouseX, mouseY):
     if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
+        app.screen = 3
+    if isIn(app, mouseX, mouseY, 725, 15, 150, 60):
         app.screen = 1
     for button in app.stockButtons:
         if isIn(app, mouseX, mouseY, button.x, button.y, button.width, button.height):
@@ -144,6 +156,8 @@ def onMousePress(app, mouseX, mouseY):
             button.selected =  -button.selected
     for sb in app.statButtons:
         if isIn(app, mouseX, mouseY, sb.x, sb.y, sb.width, sb.height):
+            if app.stock == None:
+                return
             app.metric = sb.metric
             for others in app.statButtons: #toggle selected button
                 others.selected = -1
@@ -169,7 +183,20 @@ def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
 def drawRating(app):
     drawRect(529.5, 295, 200, 120, fill=None,
              border='black', borderWidth=5)
-    drawLabel('Rating:', 629.5, 320, size=22)
+    if app.metric == None:
+        drawLabel('Rating:', 629.5, 320, size=22)
+    elif app.metric == 'RSI':
+        result, color = getRSI(app, app.stock)
+        drawLabel(f'RSI: {pythonRound(result, 2)}', 629.5, 320, size=20)
+        if color == 'green':
+            drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
+        elif color == 'grey':
+            drawLabel('HOLD', 629.5, 370, fill=color, size=30, bold=True)
+        elif color == 'red':
+            drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
+    elif app.metric == 'MACD':
+        result, color = getMACD(app, app.stock)
+        drawLabel(f'{result}', 629.5, 340, fill=color, size=26)
 
 def drawHeadlines(app):
     # drawRect(629.5, 617.5, 600, 260, fill=None, border='black', borderWidth=5,
@@ -185,6 +212,43 @@ def drawHeadlines(app):
     drawLine(929.5, 747.5, 929.5, 487.5, lineWidth=5)
     drawLine(329.5, 487.5, 510, 487.5, lineWidth=5)
     drawLine(929.5, 487.5, 750, 487.5, lineWidth=5)
+
+def getRSI(app, stock):
+    df = close14Day(app, stock)
+    change = df['PriceChange']
+    df = df.drop(columns=['PriceChange'])
+    changeUp = change.copy()
+    changeDown = change.copy()
+    changeUp[changeUp<0] = 0 #set all negative changes to 0
+    changeDown[changeDown>0] = 0 #set all positive changes to 0
+    df['Gain'] = changeUp
+    df['Loss'] = changeDown
+    df['EMA Gain'] = df['Gain'].ewm(span=14, min_periods=14).mean()
+    df['EMA Loss'] = df['Loss'].ewm(span=14, min_periods=14).mean()
+    df['RS'] = abs(df['EMA Gain'] / df['EMA Loss'])
+    df['RSI'] = 100 - (100 / (df['RS'] + 1))
+    currRSI = df.loc[df.index[-1], 'RSI']
+    if currRSI >= 70:
+        return currRSI, 'red'
+    elif currRSI >= 30 and currRSI < 70:
+        return currRSI, 'grey'
+    elif currRSI < 30:
+        return currRSI, 'green'
+
+
+def getMACD(app, stock):
+    pass
+
+def close14Day(app, stock): #create df of closing price and change in price
+    today = date.today()
+    startDate = today - relativedelta(days=60)
+    temp = web.DataReader(stock,'stooq', startDate, today)
+    df = temp.sort_index(ascending=True)
+    df = df.drop(columns=['High', 'Low', 'Volume'])
+    change = df['Close'].diff()
+    df['PriceChange'] = change
+    return df
+    
 
 
 def main():
