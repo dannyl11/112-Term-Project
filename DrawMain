@@ -27,6 +27,9 @@ class dateButton:
         self.selected = selected
 
 def onAppStart(app):
+    app.stockDict = {'MSFT': 'Microsoft', 'AAPL': 'Apple', 'AMZN': 'Amazon', 
+                     'JPM': 'JP Morgan', 'TSLA': 'Tesla', 'AVGO': 'Broadcom',
+                     'LLY': 'Eli Lilly', 'BRK-B': 'Berkshire Hathaway'}
     app.height = 800
     app.width = 1000
     app.cx = app.width/2
@@ -48,16 +51,19 @@ def drawMain(app):
     drawAxis(app)
     drawLogo(app, 160, 45, 35)
     drawButtons(app)
+    drawRect(910, 45, 150, 60, align='center', fill='green', opacity=50, 
+                border='green', borderWidth=5)
+    drawLabel('Portfolio', 910, 45, fill='white', size=22)
     if app.stock == None:
-        drawLabel('Choose a stock', app.cx, 45, fill='white', size=50)
+        drawLabel('Choose a stock', app.cx, 45, fill='white', size=30)
         pass
     else:
-        drawLabel(f'{app.stock}', app.cx, 45, fill='white', size=55)
+        drawLabel(f'{app.stockDict[app.stock]}', app.cx, 45, fill='white', size=35)
         drawAxis(app)
         drawCandles(app)
-        drawRect(900, 45, 150, 60, align='center', fill='grey', opacity=50, 
+        drawRect(745, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
-        drawLabel('Analysis', 900, 45, fill='white', size=22)
+        drawLabel('Analysis', 745, 45, fill='white', size=22)
         drawStats(app)
 def createStockButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
@@ -167,7 +173,9 @@ def drawButtons(app):
 
         
 def onMousePress(app, mouseX, mouseY):
-    if isIn(app, mouseX, mouseY, 825, 15, 150, 60):
+    if isIn(app, mouseX, mouseY, 835, 15, 150, 60):
+        app.screen = 3
+    if isIn(app, mouseX, mouseY, 645, 15, 150, 60):
         app.screen = 2
     for db in app.dateButtons:
         if isIn(app, mouseX, mouseY, db.x, db.y, db.width, db.height): #1 year
@@ -220,11 +228,12 @@ def drawLabels(app):
     drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
     drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
     drawLabel('Amazon (AMZN)', 160, 315, align='center', size=17)
-    drawLabel('J.P. Morgan (JPM)', 160, 395, align='center', size=17)
+    drawLabel('JP Morgan Chase & Co', 160, 385, align='center', size=15)
+    drawLabel('(JPM)', 160, 405, align='center', size=15)
     drawLabel('Tesla (TSLA)', 160, 475, align='center', size=17)
     drawLabel('Broadcom Inc (AVGO)', 160, 555, align='center', size=17)
     drawLabel('Eli Lilly and Co (LLY)', 160, 635, align='center', size=17)
-    drawLabel('Berkshire Hathaway', 160, 704, align='center', size=15)
+    drawLabel('Berkshire Hathaway', 160, 705, align='center', size=15)
     drawLabel('(BRK-B)', 160, 725, align='center', size=15)
 
 def getOpenHighLowCloseVol(app, stock, startY, startM, startD, endY, endM, endD):
@@ -270,6 +279,7 @@ def createDateButtons(app): #950 to 350
     sixM = dateButton(0, 6, 538+(1/3), 125, 100, 50)
     app.dateButtons.append(sixM)
     oneM = dateButton(0, 1, 671+(2/3), 125, 100, 50)
+    # oneM.selected = 1
     app.dateButtons.append(oneM)
     oneW = dateButton(1, 0, 805, 125, 100, 50)
     app.dateButtons.append(oneW)
