@@ -94,22 +94,6 @@ def drawLogo(app, cx, cy, size):
     drawRect(rectRLeft, rectTop, rectWidth, rectHeight, fill='red')
     drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
                 fill='red')
-def getOpenHighLowCloseVol(app, ticker, startY, startM, startD, endY, endM, endD):
-    result = dict()
-    startDate = dt.datetime(startY, startM, startD)
-    endDate = dt.datetime(endY, endM, endD)
-    temp = web.DataReader(ticker,'stooq', startDate, endDate)
-    df = temp.sort_index(ascending=True)
-    try:
-        df['Volume'] = df['Volume'].round().astype(int)
-    except:
-        pass
-    values = df.values.tolist()
-    counter = 0
-    for index, row in df.iterrows():
-        result[str(index)[:10]] = values[counter]
-        counter += 1
-    return result
 
 def redrawAll(app):
     drawAnalysis(app)
@@ -196,7 +180,14 @@ def drawRating(app):
             drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
     elif app.metric == 'MACD':
         result, color = getMACD(app, app.stock)
-        drawLabel(f'{result}', 629.5, 340, fill=color, size=26)
+        drawLabel(f'MACD: {result}', 629.5, 320, size=20)
+        if color == 'green':
+            drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
+        elif color == 'grey':
+            drawLabel('HOLD', 629.5, 370, fill=color, size=30, bold=True)
+        elif color == 'red':
+            drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
+
 
 def drawHeadlines(app):
     # drawRect(629.5, 617.5, 600, 260, fill=None, border='black', borderWidth=5,
@@ -235,9 +226,27 @@ def getRSI(app, stock):
     elif currRSI < 30:
         return currRSI, 'green'
 
-
 def getMACD(app, stock):
-    pass
+    df = close60Day(app, stock)
+    df = df.drop(columns=['Open', 'PriceChange'])
+    df['EMA12'] = df['Close'].ewm(span=12).mean()
+    df['EMA26'] = df['Close'].ewm(span=26).mean()
+    df['MACD'] = df['EMA12'] - df['EMA26']
+    df['Signal'] = df['MACD'].ewm(span=9).mean()
+    for i in range(2, 8):
+        lr = df.iloc[-1]
+        slr = df.iloc[-i]
+        if (slr['Signal'] > lr['Signal'] and slr['MACD'] < lr['MACD']):
+            # and lr['Signal'] > lr['MACD'] and abs(lr['Signal']-lr['MACD'] < 1)):
+            # MACD about to cross above signal so BUY
+            return 'Cross Above', 'green'
+        elif (slr['Signal'] < lr['Signal'] and slr['MACD'] > lr['MACD']):
+            #   and lr['Signal'] < lr['MACD'] and abs(lr['Signal']-lr['MACD'] < 1)):
+            #MACD about to cross below signal so SELL
+            return 'Cross Below', 'red'
+        else: #No crossing upcoming, HOLD
+            continue
+    return 'No Cross', 'grey'
 
 def close60Day(app, stock): #create df of closing price and change in price
     today = date.today()
@@ -248,8 +257,6 @@ def close60Day(app, stock): #create df of closing price and change in price
     change = df['Close'].diff()
     df['PriceChange'] = change
     return df
-    
-
 
 def main():
     runApp(app)
