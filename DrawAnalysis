@@ -214,7 +214,7 @@ def drawHeadlines(app):
     drawLine(929.5, 487.5, 750, 487.5, lineWidth=5)
 
 def getRSI(app, stock):
-    df = close14Day(app, stock)
+    df = close60Day(app, stock)
     change = df['PriceChange']
     df = df.drop(columns=['PriceChange'])
     changeUp = change.copy()
@@ -239,7 +239,7 @@ def getRSI(app, stock):
 def getMACD(app, stock):
     pass
 
-def close14Day(app, stock): #create df of closing price and change in price
+def close60Day(app, stock): #create df of closing price and change in price
     today = date.today()
     startDate = today - relativedelta(days=60)
     temp = web.DataReader(stock,'stooq', startDate, today)
