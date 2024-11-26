@@ -58,12 +58,16 @@ def drawLoadingBar(app):
 
 def drawMainScreen(app):
     drawRect(0, 0, app.width, app.height, opacity=75)
+
 def onStep(app):
     if app.loadbar <= (5/8)*app.width:
         app.loadbar += 15
-def onKeyPress(app, key):
-    if app.screen == 0:
+
+def onMousePress(app, mouseX, mouseY):
+    if isIn(app, mouseX, mouseY, 225,(13/16)*app.height-25, 250, 50):
         app.screen = 1
+    elif isIn(app, mouseX, mouseY, 525, (13/16)*app.height-25, 250, 50):
+        app.screen = 3
 
 def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
     buttonRightX = buttonLeftX + width
