@@ -4,7 +4,7 @@ import pandas_datareader.data as web
 import datetime as dt
 from datetime import date
 from dateutil.relativedelta import relativedelta
-
+from pygooglenews import GoogleNews
 
 class Button:
     def __init__(self, stock, x, y, width, height, fill):
@@ -27,6 +27,9 @@ class statButton:
         self.selected = -1
 
 def onAppStart(app):
+    app.stockDict = {'MSFT': 'Microsoft', 'AAPL': 'Apple', 'AMZN': 'Amazon', 
+                     'JPM': 'JP Morgan', 'TSLA': 'Tesla', 'AVGO': 'Broadcom',
+                     'LLY': 'Eli Lilly', 'BRK-B': 'Berkshire Hathaway'}
     app.height = 800
     app.width = 1000
     app.cx = app.width/2
@@ -46,17 +49,19 @@ def drawAnalysis(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
     drawLogo(app, 160, 40, 40)
     drawButtons(app)
-    drawLabel(f'{app.stock}', 629.5, 140, size=40)
-    drawRect(725, 45, 150, 60, align='center', fill='green', opacity=50, 
+    try:
+        drawLabel(f'{app.stockDict[app.stock]}', 629.5, 140, size=40)
+    except:
+        drawLabel('None', 629.5, 140, size=40)
+    drawRect(745, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
-    drawLabel('Market Data', 725, 45, fill='white', size=22)
-    drawRect(900, 45, 150, 60, align='center', fill='green', opacity=50, 
+    drawLabel('Market Data', 745, 45, fill='white', size=22)
+    drawRect(910, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
-    drawLabel('Portfolio', 900, 45, fill='white', size=22)
+    drawLabel('Portfolio', 910, 45, fill='white', size=22)
     drawStatButtons(app)
     drawRating(app)
     drawHeadlines(app)
-
 
 def createButtons(app):
     msft = Button('MSFT', 60, 120, 200, 70, None)
@@ -128,9 +133,9 @@ def drawStatButtons(app):
     drawLabel('MACD', 788+(2/3), 230, size=24)
 
 def onMousePress(app, mouseX, mouseY):
-    if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
+    if isIn(app, mouseX, mouseY, 835, 15, 150, 60): 
         app.screen = 3
-    if isIn(app, mouseX, mouseY, 725, 15, 150, 60):
+    if isIn(app, mouseX, mouseY, 745, 15, 150, 60):
         app.screen = 1
     for button in app.stockButtons:
         if isIn(app, mouseX, mouseY, button.x, button.y, button.width, button.height):
@@ -180,7 +185,7 @@ def drawRating(app):
             drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
     elif app.metric == 'MACD':
         result, color = getMACD(app, app.stock)
-        drawLabel(f'MACD: {result}', 629.5, 320, size=20)
+        drawLabel(f'MACD: {result}', 629.5, 320, size=18)
         if color == 'green':
             drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
         elif color == 'grey':
@@ -188,10 +193,7 @@ def drawRating(app):
         elif color == 'red':
             drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
 
-
 def drawHeadlines(app):
-    # drawRect(629.5, 617.5, 600, 260, fill=None, border='black', borderWidth=5,
-    #          align='center')
     if app.stock == None:
         drawLabel('Headlines', 629.5, 487.5, size=28)
         drawLine(329.5, 487.5, 550, 487.5, lineWidth=5)
@@ -203,6 +205,42 @@ def drawHeadlines(app):
     drawLine(929.5, 747.5, 929.5, 487.5, lineWidth=5)
     drawLine(329.5, 487.5, 510, 487.5, lineWidth=5)
     drawLine(929.5, 487.5, 750, 487.5, lineWidth=5)
+    gn = GoogleNews()
+    try:
+        news = gn.search(query=f'{app.stockDict[app.stock]}', helper=True)
+        headlines = []
+        for item in news['entries']:
+            if len(headlines) < 3:
+                headlines.append(item['title'])
+        headlineY = 530
+        for item in headlines:
+            dashIndex = item.find(' - ')
+            headline = item[:dashIndex]
+            if headline[-1] == '.':
+                headline = headline[:-1]
+            publisher = item[dashIndex+3:]
+            if len(headline) > 130:
+                drawLabel(f'- {headline[:65]}-', 340, headlineY, align='left', size=18)
+                headlineY += 30
+                drawLabel(f'- {headline[65:130]}-', 340, headlineY, align='left', size=18)
+                headlineY += 30
+                drawLabel(f'  {headline[130:]}, per: {publisher}', 340, headlineY, 
+                align='left', size=18)
+                headlineY += 30
+            elif len(headline) > 65:
+                drawLabel(f'- {headline[:65]}-', 340, headlineY, align='left', size=18)
+                headlineY += 30
+                drawLabel(f'  {headline[65:]}, per: {publisher}', 340, headlineY, 
+                align='left', size=18)
+                headlineY += 30
+            else:
+                drawLabel(f'- {headline}, ', 340, headlineY, size=18, align='left')
+                headlineY += 30
+                drawLabel(f'  per: {publisher}', 340, headlineY, size=18, align='left')
+                headlineY += 30
+    except:
+        return
+
 
 def getRSI(app, stock):
     df = close60Day(app, stock)
@@ -219,11 +257,11 @@ def getRSI(app, stock):
     df['RS'] = abs(df['EMA Gain'] / df['EMA Loss'])
     df['RSI'] = 100 - (100 / (df['RS'] + 1))
     currRSI = df.loc[df.index[-1], 'RSI']
-    if currRSI >= 70:
+    if currRSI >= 65:
         return currRSI, 'red'
-    elif currRSI >= 30 and currRSI < 70:
+    elif currRSI >= 40 and currRSI < 65:
         return currRSI, 'grey'
-    elif currRSI < 30:
+    elif currRSI < 40:
         return currRSI, 'green'
 
 def getMACD(app, stock):
