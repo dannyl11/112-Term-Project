@@ -1,11 +1,3 @@
-#stocks to track (biggest in diff sectors): NVDA, AAPL, AMZN, JPM
-# TSLA, AVGO(broadcom), LLY, BRK-B
-#libraries/APIs needed: pandas(statistical analysis), mplfinance(financial charts)
-# pygooglenews(headlines), pandas DataReader(stooq finance data), 
-# PIL maybe for graphics
-# pygooglenews https://github.com/kotartemiy/pygooglenews#scrapingbeeexample
-# citing RSI formula https://www.macroption.com/rsi-calculation/#rsi-formula
-# citing MACD formula https://www.investopedia.com/terms/m/macd.asp
 #To implement:
 # 1) portfolio performance
 # 2) stock images for title screen
@@ -58,7 +50,7 @@ def onAppStart(app):
     app.cy = app.height/2
     app.stock = None
     app.screen = 0
-    app.setMaxShapeCount(10000)
+    app.setMaxShapeCount(10**10)
     #variable for title screen
     app.loadbar = 1
     #variables for graphing
@@ -369,15 +361,15 @@ def drawRating(app): #draw RSI and MACD values
 def drawHeadlines(app): #grab and draw news headlines
     if app.stock == None:
         drawLabel('Headlines', 629.5, 487.5, size=28)
-        drawLine(329.5, 487.5, 550, 487.5, lineWidth=5)
-        drawLine(929.5, 487.5, 705, 487.5, lineWidth=5)
+        drawLine(314.5, 487.5, 550, 487.5, lineWidth=5)
+        drawLine(944.5, 487.5, 705, 487.5, lineWidth=5)
     else:
         drawLabel(f'{app.stock} Headlines', 629.5, 487.5, size=28)
-    drawLine(329.5, 487.5, 329.5, 747.5, lineWidth=5)
-    drawLine(329.5, 747.5, 929.5, 747.5, lineWidth=5)
-    drawLine(929.5, 747.5, 929.5, 487.5, lineWidth=5)
-    drawLine(329.5, 487.5, 510, 487.5, lineWidth=5)
-    drawLine(929.5, 487.5, 750, 487.5, lineWidth=5)
+    drawLine(314.5, 487.5, 314.5, 747.5, lineWidth=5)
+    drawLine(314.5, 747.5, 944.5, 747.5, lineWidth=5)
+    drawLine(944.5, 747.5, 944.5, 487.5, lineWidth=5)
+    drawLine(314.5, 487.5, 510, 487.5, lineWidth=5)
+    drawLine(944.5, 487.5, 750, 487.5, lineWidth=5)
     gn = GoogleNews()
     try:
         news = gn.search(query=f'{app.stockDict[app.stock]}', helper=True)
@@ -393,23 +385,23 @@ def drawHeadlines(app): #grab and draw news headlines
                 headline = headline[:-1]
             publisher = item[dashIndex+3:]
             if len(headline) > 130:
-                drawLabel(f'- {headline[:65]}-', 340, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18)
                 headlineY += 30
-                drawLabel(f'- {headline[65:130]}-', 340, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[65:130]}-', 325, headlineY, align='left', size=18)
                 headlineY += 30
-                drawLabel(f'  {headline[130:]}, per: {publisher}', 340, headlineY, 
+                drawLabel(f'  {headline[130:]}, per: {publisher}', 325, headlineY, 
                 align='left', size=18)
                 headlineY += 30
             elif len(headline) > 65:
-                drawLabel(f'- {headline[:65]}-', 340, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18)
                 headlineY += 30
-                drawLabel(f'  {headline[65:]}, per: {publisher}', 340, headlineY, 
+                drawLabel(f'  {headline[65:]}, per: {publisher}', 325, headlineY, 
                 align='left', size=18)
                 headlineY += 30
             else:
-                drawLabel(f'- {headline}, ', 340, headlineY, size=18, align='left')
+                drawLabel(f'- {headline}, ', 325, headlineY, size=18, align='left')
                 headlineY += 30
-                drawLabel(f'  per: {publisher}', 340, headlineY, size=18, align='left')
+                drawLabel(f'  per: {publisher}', 325, headlineY, size=18, align='left')
                 headlineY += 30
     except:
         return
@@ -435,6 +427,8 @@ def getRSI(app, stock): #calculate RSI and return rating
         return currRSI, 'grey'
     elif currRSI < 40:
         return currRSI, 'green'
+#used this formula in calculations: https://www.macroption.com/rsi-calculation/ 
+#but coded it into python myself
 
 def getMACD(app, stock): #calculate MACD and return rating
     df = close60Day(app, stock)
@@ -455,6 +449,8 @@ def getMACD(app, stock): #calculate MACD and return rating
         else: #No crossing upcoming, HOLD
             continue
     return 'No Cross', 'grey'
+#used this formula: https://www.investopedia.com/terms/m/macd.asp
+#but coded into python myself
 
 def close60Day(app, stock): #create df of close and change in price for last 60 days
     ticker = yf.Ticker(stock)
