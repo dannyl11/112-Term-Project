@@ -457,11 +457,9 @@ def getMACD(app, stock): #calculate MACD and return rating
     return 'No Cross', 'grey'
 
 def close60Day(app, stock): #create df of close and change in price for last 60 days
-    today = date.today()
-    startDate = today - relativedelta(days=60)
-    temp = web.DataReader(stock,'stooq', startDate, today)
-    df = temp.sort_index(ascending=True)
-    df = df.drop(columns=['High', 'Low', 'Volume'])
+    ticker = yf.Ticker(stock)
+    temp = ticker.history(period='1mo')
+    df = temp.drop(columns=['High', 'Low', 'Volume','Dividends', 'Stock Splits'])
     change = df['Close'].diff()
     df['PriceChange'] = change
     return df
@@ -505,7 +503,6 @@ def onMousePress(app, mouseX, mouseY):
                     app.lows = []
                     for date in app.data:
                         app.datapoints.append(app.data[date])
-                    print((len(app.data), len(app.datapoints)))
                     app.plotpoints = app.datapoints[-30:]
                     for datapoint in app.plotpoints:
                         high = datapoint[1]
