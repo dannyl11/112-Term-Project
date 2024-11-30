@@ -39,6 +39,7 @@ def onAppStart(app):
     app.pfDateButtons = []
     #portfolio graphing variables
     app.pfData = pd.DataFrame() #df of all stocks in portfolio
+    app.pfData2 = pd.DataFrame() #df of all stocks taking acct size of position
     app.plotData = pd.DataFrame() #df of sum of all closing prices of stocks
     app.oneYData = [] #list of plotData 1yr worth of data
     app.timeData = [] #indexing app.oneYData to fit timeframe
@@ -75,7 +76,12 @@ def drawChart(app):
             nextY = graphY-((next-priceMin)/yScale)
             currX = startX + i*xSpacing
             nextX = startX + (i+1)*xSpacing
-            drawLine(currX, currY, nextX, nextY, lineWidth=4)
+            if currY > nextY:
+                drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'green')
+            elif currY < nextY:
+                drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'red')
+            else:
+                drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'black')
     else:
         return 
 
@@ -157,6 +163,7 @@ def drawPortfolioPerformance(app):
         drawLabel(f'Total Value: {pythonRound(totalValue, 2)}', 675, 690, size=22)
         performance, color = getPerformance(app, totalValue)
         drawLabel(f'{performance}%', 675, 730, fill=color, size=22)
+        drawLabel('wher it go')
     except:
         pass
 
@@ -166,9 +173,11 @@ def getPerformance(app, totalValue):
         numShares = app.portfolio[stock][1]
         purchasePrice = app.portfolio[stock][0]
         initialValue += numShares*purchasePrice
+    print(1)
     pctChange = pythonRound(((totalValue - initialValue)/initialValue)*100, 1)
+    print(pctChange)
     if pctChange < 0:
-        return (abs(pctChange, 'red'))
+        return (abs(pctChange), 'red')
     elif pctChange == 0:
         return (pctChange, 'grey')
     elif pctChange > 0:
@@ -181,7 +190,7 @@ def onKeyPress(app, key):
     if app.input == 'Stock not found' or app.input == 'Maximum number of stocks reached':
         app.input = ''
     elif key == 'escape':
-        print(app.plotData)
+        print(app.portfolio)
     elif key == 'space':
         pass
     elif key == ',':
@@ -212,6 +221,7 @@ def onKeyPress(app, key):
             stock = app.input[equalIndex+1:]
             del app.portfolio[stock]
             app.pfData = app.pfData.drop(columns=[stock])
+            app.pfData2 =  app.pfData2.drop(columns=[stock])
             app.input = ''
         elif app.input.count(',') != 2 or app.input[-1] == ',':
             pass
@@ -232,15 +242,18 @@ def onKeyPress(app, key):
                     app.portfolio[stock][1] += numShares
                     app.portfolio[stock][0] = avgSharePrice
                     app.input = ''
-                    app.plotData['TV'] = app.pfData.sum(axis=1)
+                    data = ticker.history(period="1y")
+                    app.pfData2[stock] = app.pfData2[stock] + data['Close']*numShares
+                    app.plotData['TV'] = app.pfData2.sum(axis=1)
                     app.oneYData = app.plotData['TV'].tolist()
                     onMousePress(app, app.cursorX, app.cursorY)
                 elif stock not in app.portfolio and len(app.portfolio) < 8:
                     data = ticker.history(period="1y")
-                    app.pfData[f'{stock}'] = data['Close']
+                    app.pfData[stock] = data['Close']
+                    app.pfData2[stock] = data['Close']*numShares
                     app.portfolio[stock] = [int(price), int(numShares)]
                     app.input = ''
-                    app.plotData['TV'] = app.pfData.sum(axis=1)
+                    app.plotData['TV'] = app.pfData2.sum(axis=1)
                     app.oneYData = app.plotData['TV'].tolist()
                     onMousePress(app, app.cursorX, app.cursorY)
                 else:
