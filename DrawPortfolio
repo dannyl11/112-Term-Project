@@ -5,6 +5,17 @@ import datetime as dt
 from datetime import date
 import yfinance as yf
 
+class dateButton: #class for graph date buttons
+    def __init__(self, weeks, months, x, y, width, height, selected=-1):
+        self.weeksBack = weeks
+        self.monthsBack = months
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.fill = None
+        self.selected = selected
+
 def onAppStart(app):
     app.height = 800
     app.width = 1000
@@ -24,12 +35,19 @@ def onAppStart(app):
     app.todayM, app.todayD, app.todayY = getTodayDate(app)
     #portfolio variables
     app.portfolio = dict()
-    app.pfData = pd.DataFrame()
     app.input = ''
-    app.plotData = pd.DataFrame()
+    app.pfDateButtons = []
+    #portfolio graphing variables
+    app.pfData = pd.DataFrame() #df of all stocks in portfolio
+    app.plotData = pd.DataFrame() #df of sum of all closing prices of stocks
+    app.oneYData = [] #list of plotData 1yr worth of data
+    app.timeData = [] #indexing app.oneYData to fit timeframe
+    app.high = None
+    app.low = None
 
 def drawPortfolioScreen(app):
     drawSetup(app)
+    drawDateButtons(app)
     if app.input != 'Stock not found' or app.input != 'Maximum number of stocks reached':
         drawLabel(f'{app.input}', app.cx, 140, size=25, fill='green')
     # elif app.input == 'Maximum number of stocks reached':
@@ -39,7 +57,25 @@ def drawPortfolioScreen(app):
     drawStocksandPrices(app)
     drawAppSkeleton(app)
     drawButtonSpaces(app)
-    plotPortfolio(app)
+    app.plotData['TV'] = app.pfData.sum(axis=1)
+    drawChart(app)
+    drawPFPrices(app)
+
+def drawChart(app):
+    if len(app.timeData) != 0:
+        priceMin = min(app.lows) - 5
+        priceMax = max(app.highs) + 5
+        yScale = abs(priceMax-priceMin)/360 #price each pixel in y-axis represents
+        graphX = 400
+        graphLength = 550
+        graphY = 600
+    else:
+        return 
+
+def drawPFPrices(app): #draw dynamic prices on chart
+    if app.low != None and app.high != None:
+        drawLabel(f'{int(app.low)}', 392.5, 590, size=16)
+        drawLabel(f'{int(app.high)}', 392.5, 250, size=16)
  
 def drawSetup(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
@@ -96,27 +132,24 @@ def drawButtonSpaces(app):
         startY += 75
 
 def drawAppSkeleton(app):
-    drawRect(675, 675, 300, 150, border='black', borderWidth=5, fill=None, align='center')
-    drawLabel('Portfolio Performance', 675, 620, size=20)
+    drawRect(675, 700, 300, 150, border='black', borderWidth=5, fill=None, align='center')
+    drawLabel('Portfolio Performance', 675, 647.5, size=20)
     #draw chart axis
-    drawLine(400, 555, 950, 555) 
-    drawLabel('$', 385, 380, size=22)
-    drawLine(400, 555, 400, 205)
-    drawLabel(f'{app.todayM}-{app.todayD}', 930, 570, size=18)
+    drawLine(415, 600, 965, 600) 
+    drawLabel('$', 400, 420, size=22)
+    drawLine(415, 600, 415, 240)
+    drawLabel(f'{app.todayM}-{app.todayD}', 945, 615, size=18)
 
 def redrawAll(app):
     drawPortfolioScreen(app)
-
-def onMousePress(app, mouseX, mouseY):
-    if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
-        app.screen = 1
 
 def onKeyPress(app, key):
     if app.input == 'Stock not found' or app.input == 'Maximum number of stocks reached':
         app.input = ''
     elif key == 'escape':
-        print(app.pfData)
         print(app.plotData)
+        print(len(app.oneYData))
+        print(len(app.timeData))
     elif key == 'space':
         pass
     elif key == ',':
@@ -168,7 +201,7 @@ def onKeyPress(app, key):
                     app.portfolio[stock][0] = avgSharePrice
                     app.input = ''
                 elif stock not in app.portfolio and len(app.portfolio) < 8:
-                    data = ticker.history(period="1mo")
+                    data = ticker.history(period="1y")
                     app.pfData[f'{stock}'] = data['Close']
                     app.portfolio[stock] = [int(price), int(numShares)]
                     app.input = ''
@@ -178,8 +211,50 @@ def onKeyPress(app, key):
             else:
                 app.input = 'Stock not found'
 
-def plotPortfolio(app):
-    app.plotData['TV'] = app.pfData.sum(axis=1)
+
+def createDateButtons(app): #create buttons to change chart timeframe
+    #415-965
+    #550 space, 400buttons, 150/5 increments
+    oneY = dateButton(0, 12, 445, 175, 100, 50)
+    app.pfDateButtons.append(oneY)
+    sixM = dateButton(0, 6, 575, 175, 100, 50)
+    app.pfDateButtons.append(sixM)
+    oneM = dateButton(0, 1, 705, 175, 100, 50)
+    # oneM.selected = 1
+    app.pfDateButtons.append(oneM)
+    oneW = dateButton(1, 0, 835, 175, 100, 50)
+    app.pfDateButtons.append(oneW)
+
+def drawDateButtons(app): #draw buttons to change chart timeframe
+    createDateButtons(app)
+    for button in app.pfDateButtons:
+        drawRect(button.x, button.y, button.width, button.height, fill=button.fill,
+                 border='black', borderWidth=2.5)
+        if button.selected == True:
+            drawRect(button.x, button.y, button.width, button.height, fill='green',
+                 border='black', borderWidth=2.5)
+    drawLabel('1Y', 495, 200, size=22)
+    drawLabel('6M', 625, 200, size=22)
+    drawLabel('1M', 755, 200, size=22)
+    drawLabel('1W', 885, 200, size=22)
+
+def onMousePress(app, mouseX, mouseY):
+    if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
+        app.screen = 1
+    for db in app.pfDateButtons:
+        if isIn(app, mouseX, mouseY, db.x, db.y, db.width, db.height):
+            app.oneYData = app.plotData['TV'].tolist()
+            daysBack = db.weeksBack*7 + db.monthsBack*30
+            app.timeData = app.oneYData[-daysBack:]
+            try:
+                app.high = max(app.timeData)
+                app.low = min(app.timeData)
+            except:
+                return
+            for others in app.pfDateButtons: #toggle selected button
+                others.selected = -1
+            db.selected = -db.selected
+
 
 def isValid(ticker):
     info = ticker.info
