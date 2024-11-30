@@ -26,11 +26,12 @@ def onAppStart(app):
     app.portfolio = dict()
     app.pfData = pd.DataFrame()
     app.input = ''
+    app.plotData = pd.DataFrame()
 
 def drawPortfolioScreen(app):
     drawSetup(app)
     if app.input != 'Stock not found' or app.input != 'Maximum number of stocks reached':
-        drawLabel(f'{app.input}', app.cx, 170, size=25, fill='green')
+        drawLabel(f'{app.input}', app.cx, 140, size=25, fill='green')
     # elif app.input == 'Maximum number of stocks reached':
     #     drawLabel('Maximum number of stocks reached', app.cx, 170, size=20, fill='red')
     # else:
@@ -38,6 +39,7 @@ def drawPortfolioScreen(app):
     drawStocksandPrices(app)
     drawAppSkeleton(app)
     drawButtonSpaces(app)
+    plotPortfolio(app)
  
 def drawSetup(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
@@ -46,10 +48,8 @@ def drawSetup(app):
                 border='green', borderWidth=5)
     drawLabel('Market Data', 900, 45, fill='white', size=22)
     drawLabel('Your Portfolio', app.cx, 45, fill='white', size=40)
-    drawLabel("Enter stock ticker and price in form 'TICKER,PRICE,# OF SHARES' and press 'enter'",
-              app.cx, 115, size=16)
-    drawLabel("or remove stock by typing 'DELETE=TICKER' and pressing 'enter'",
-              app.cx, 135, size=16)
+    drawLabel("Enter stock ticker and price in form 'TICKER,PRICE,# OF SHARES' and press 'enter' or remove stock by typing 'DELETE=TICKER' and pressing 'enter'",
+              app.cx, 110, size=14)
 
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
@@ -76,17 +76,17 @@ def addStockClose(app, stock):
     app.portfolio[f'{stock}'] = temp['Close']
 
 def drawStocksandPrices(app):
-    startY = 226.25
+    startY = 195
     for key in app.portfolio:
         drawLabel(f'{key} ({int(app.portfolio[key][1])})', 130, startY, size=25)
         closePrice = app.pfData[key].iloc[-1]
         drawLabel(f'${pythonRound(closePrice, 2)}', 277.5, startY-13, size=18)
         pctChange, color = getPctChange(app, key, closePrice)
         drawLabel(f'{pctChange}%', 277.5, startY+13, size=18, fill=color)
-        startY += 72.5
+        startY += 75
 
 def drawButtonSpaces(app):
-    startY = 195
+    startY = 162.5
     for i in range(8):
         drawRect(45, startY, 170, 65, border='black', borderWidth=5, fill=None)
         # drawRect(215, startY, 125, 65, border='black', borderWidth=5, fill=None)
@@ -114,7 +114,10 @@ def onMousePress(app, mouseX, mouseY):
 def onKeyPress(app, key):
     if app.input == 'Stock not found' or app.input == 'Maximum number of stocks reached':
         app.input = ''
-    if key == 'space':
+    elif key == 'escape':
+        print(app.pfData)
+        print(app.plotData)
+    elif key == 'space':
         pass
     elif key == ',':
         if app.input.count(',') <= 1:
@@ -174,6 +177,9 @@ def onKeyPress(app, key):
                 
             else:
                 app.input = 'Stock not found'
+
+def plotPortfolio(app):
+    app.plotData['TV'] = app.pfData.sum(axis=1)
 
 def isValid(ticker):
     info = ticker.info
