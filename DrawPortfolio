@@ -2,6 +2,7 @@ from cmu_graphics import *
 import pandas as pd
 import pandas_datareader.data as web
 import datetime as dt
+from datetime import date
 import yfinance as yf
 
 def onAppStart(app):
@@ -19,18 +20,23 @@ def onAppStart(app):
     app.statButtons = []
     app.loading = 0 
     app.metric = None
+    #
+    app.todayM, app.todayD, app.todayY = getTodayDate(app)
     #portfolio variables
     app.portfolio = dict()
     app.pfData = pd.DataFrame()
     app.input = ''
 
-def drawPortfolio(app):
+def drawPortfolioScreen(app):
     drawSetup(app)
-    if app.input != 'Stock not found':
-        drawLabel(f'{app.input}', app.cx, 170, size=20, fill='green')
+    if app.input != 'Stock not found' or app.input != 'Maximum number of stocks reached':
+        drawLabel(f'{app.input}', app.cx, 170, size=25, fill='green')
+    elif app.input == 'Maximum number of stocks reached':
+        drawLabel('Maximum number of stocks reached', app.cx, 170, size=20, fill='red')
     else:
         drawLabel('Could not find stock', app.cx, 170, size=20, fill='red')
     drawStocks(app)
+    drawAppSkeleton(app)
  
 def drawSetup(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
@@ -40,10 +46,9 @@ def drawSetup(app):
     drawLabel('Market Data', 900, 45, fill='white', size=22)
     drawLabel('Your Portfolio', app.cx, 45, fill='white', size=40)
     drawLabel("Enter stock ticker and price in form 'TICKER,PRICE,# OF SHARES' and press 'enter'",
-              app.cx, 115, size=20)
+              app.cx, 115, size=16)
     drawLabel("or Remove stock by typing 'DELETE=TICKER' and pressing 'enter'",
-              app.cx, 145, size=20)
-
+              app.cx, 135, size=16)
 
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
@@ -75,15 +80,24 @@ def drawStocks(app):
         drawLabel(f'{key}', 150, startY)
         startY += 25
 
+def drawAppSkeleton(app):
+    drawRect(650, 600, 300, 150, border='black', borderWidth=5, fill=None)
+    drawLabel('Portfolio Performance', 800, 620, size=20)
+    #draw chart axis
+    drawLine(400, 555, 950, 555) 
+    drawLabel('$', 385, 380, size=22)
+    drawLine(400, 555, 400, 205)
+    drawLabel(f'{app.todayM}-{app.todayD}', 930, 570, size=18)
+
 def redrawAll(app):
-    drawPortfolio(app)
+    drawPortfolioScreen(app)
 
 def onMousePress(app, mouseX, mouseY):
     if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
         app.screen = 1
 
 def onKeyPress(app, key):
-    if app.input == 'Stock not found':
+    if app.input == 'Stock not found' or app.input == 'Maximum number of stocks reached':
         app.input = ''
     if key == 'space':
         pass
@@ -113,19 +127,31 @@ def onKeyPress(app, key):
             del app.portfolio[stock]
             app.pfData = app.pfData.drop(columns=[stock])
             app.input = ''
+        elif app.input.count(',') != 2 or app.input[-1] == ',':
+            pass
         else:
             commaIndex1 = app.input.find(',')
             stock = app.input[:commaIndex1]
             rest = app.input[commaIndex1+1:]
             commaIndex2 = rest.find(',')
-            price = rest[:commaIndex2]
-            numShares = rest[commaIndex2+1:]
+            price = int(rest[:commaIndex2])
+            numShares = int(rest[commaIndex2+1:])
             ticker = yf.Ticker(stock)
             if isValid(ticker):
-                data = ticker.history(period="1mo")
-                app.pfData[f'{stock}'] = data['Close']
-                app.input = ''
-                app.portfolio[stock] = [price, numShares]
+                if stock in app.portfolio:
+                    avgSharePrice = ((app.portfolio[stock][0]*app.portfolio[stock][1])+
+                                     (price*numShares)) / (app.portfolio[stock][1]+numShares)
+                    app.portfolio[stock][1] += numShares
+                    app.portfolio[stock][0] = avgSharePrice
+                    app.input = ''
+                elif stock not in app.portfolio and len(app.portfolio) < 8:
+                    data = ticker.history(period="1mo")
+                    app.pfData[f'{stock}'] = data['Close']
+                    app.portfolio[stock] = [int(price), int(numShares)]
+                    app.input = ''
+                else:
+                    app.input = 'Maximum number of stocks reached'
+                
             else:
                 app.input = 'Stock not found'
 
@@ -138,6 +164,13 @@ def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
     buttonBotY = buttonTopY + height
     return (buttonTopY <= mouseY <= buttonBotY and 
             buttonLeftX <= mouseX <= buttonRightX)
+
+def getTodayDate(app):
+    today = str(date.today())
+    year = int(today[:4])
+    month = int(today[5:7])
+    day = int(today[8:])
+    return month, day, year
 
 def main():
     runApp(app)
