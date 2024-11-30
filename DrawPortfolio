@@ -80,7 +80,9 @@ def drawStocksandPrices(app):
     for key in app.portfolio:
         drawLabel(f'{key}', 130, startY, size=25)
         closePrice = app.pfData[key].iloc[-1]
-        drawLabel(f'${pythonRound(closePrice, 2)}', 275, startY-13, size=18)
+        drawLabel(f'${pythonRound(closePrice, 2)}', 277.5, startY-13, size=18)
+        pctChange, color = getPctChange(app, key, closePrice)
+        drawLabel(f'{pctChange}%', 277.5, startY+13, size=18, fill=color)
         startY += 72.5
 
 def drawButtonSpaces(app):
@@ -117,6 +119,8 @@ def onKeyPress(app, key):
                 app.input += ','
     elif key == '-':
         app.input += '-'
+    elif key == '.':
+        app.input += '.'
     elif key == 'backspace':
         app.input = app.input[:-1]
     elif key.isalpha() and len(key) == 1:
@@ -145,8 +149,8 @@ def onKeyPress(app, key):
             stock = app.input[:commaIndex1]
             rest = app.input[commaIndex1+1:]
             commaIndex2 = rest.find(',')
-            price = int(rest[:commaIndex2])
-            numShares = int(rest[commaIndex2+1:])
+            price = float(rest[:commaIndex2])
+            numShares = float(rest[commaIndex2+1:])
             ticker = yf.Ticker(stock)
             if isValid(ticker):
                 if stock in app.portfolio:
@@ -182,6 +186,17 @@ def getTodayDate(app):
     month = int(today[5:7])
     day = int(today[8:])
     return month, day, year
+
+def getPctChange(app, stock, closePrice):
+    purchasePrice = app.portfolio[stock][0]
+    pctChange = pythonRound(((closePrice-purchasePrice) / purchasePrice)*100, 1)
+    if pctChange < 0:
+        return (abs(pctChange), 'red')
+    elif pctChange > 0:
+        return (pctChange, 'green')
+    else:
+        return (pctChange, 'grey')
+
 
 def main():
     runApp(app)
