@@ -50,7 +50,7 @@ def onAppStart(app):
 
 def drawPortfolioScreen(app):
     drawSetup(app)
-    drawDateButtons(app)
+    drawPFDateButtons(app)
     if app.input != 'Stock not found' or app.input != 'Maximum number of stocks reached':
         drawLabel(f'{app.input}', app.cx, 140, size=25, fill='green')
     drawStocksandPrices(app)
@@ -119,10 +119,10 @@ def drawLogo(app, cx, cy, size):
     drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
                 fill='red')
 
-def addStockClose(app, stock):
-    ticker = yf.Ticker(stock)
-    temp = ticker.history(period='1mo')
-    app.portfolio[f'{stock}'] = temp['Close']
+# def addStockClose(app, stock):
+#     ticker = yf.Ticker(stock)
+#     temp = ticker.history(period='1mo')
+#     app.portfolio[f'{stock}'] = temp['Close']
 
 def drawStocksandPrices(app):
     startY = 195
@@ -163,7 +163,6 @@ def drawPortfolioPerformance(app):
         drawLabel(f'Total Value: {pythonRound(totalValue, 2)}', 675, 690, size=22)
         performance, color = getPerformance(app, totalValue)
         drawLabel(f'{performance}%', 675, 730, fill=color, size=22)
-        drawLabel('wher it go')
     except:
         pass
 
@@ -263,7 +262,7 @@ def onKeyPress(app, key):
                 app.input = 'Stock not found'
 
 
-def createDateButtons(app): #create buttons to change chart timeframe
+def createPFDateButtons(app): #create buttons to change chart timeframe
     #415-965
     #550 space, 400buttons, 150/5 increments
     oneY = dateButton(0, 12, 445, 175, 100, 50)
@@ -276,8 +275,8 @@ def createDateButtons(app): #create buttons to change chart timeframe
     oneW = dateButton(1, 0, 835, 175, 100, 50)
     app.pfDateButtons.append(oneW)
 
-def drawDateButtons(app): #draw buttons to change chart timeframe
-    createDateButtons(app)
+def drawPFDateButtons(app): #draw buttons to change chart timeframe
+    createPFDateButtons(app)
     for button in app.pfDateButtons:
         drawRect(button.x, button.y, button.width, button.height, fill=button.fill,
                  border='black', borderWidth=2.5)
