@@ -172,9 +172,7 @@ def getPerformance(app, totalValue):
         numShares = app.portfolio[stock][1]
         purchasePrice = app.portfolio[stock][0]
         initialValue += numShares*purchasePrice
-    print(1)
     pctChange = pythonRound(((totalValue - initialValue)/initialValue)*100, 1)
-    print(pctChange)
     if pctChange < 0:
         return (abs(pctChange), 'red')
     elif pctChange == 0:
@@ -188,7 +186,7 @@ def redrawAll(app):
 def onKeyPress(app, key):
     if app.input == 'Stock not found' or app.input == 'Maximum number of stocks reached':
         app.input = ''
-    elif key == 'escape':
+    elif key == 'escape':#debugging tool
         print(app.portfolio)
     elif key == 'space':
         pass
@@ -221,6 +219,9 @@ def onKeyPress(app, key):
             del app.portfolio[stock]
             app.pfData = app.pfData.drop(columns=[stock])
             app.pfData2 =  app.pfData2.drop(columns=[stock])
+            app.plotData['TV'] = app.pfData2.sum(axis=1)
+            app.oneYData = app.plotData['TV'].tolist()
+
             app.input = ''
         elif app.input.count(',') != 2 or app.input[-1] == ',':
             pass
