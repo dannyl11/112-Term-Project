@@ -1,1 +1,144 @@
+from cmu_graphics import *
+import pandas as pd
+import pandas_datareader.data as web
+import datetime as dt
+import yfinance as yf
 
+def onAppStart(app):
+    app.height = 800
+    app.width = 1000
+    app.cx = app.width/2
+    app.cy = app.height/2
+    app.screen = 0 #0 for title, 1 for main, 2 for analysis
+    app.stock = None
+    app.datapoints = []
+    app.highs = []
+    app.lows = []
+    app.data = None
+    app.stockButtons = []
+    app.statButtons = []
+    app.loading = 0 
+    app.metric = None
+    #portfolio variables
+    app.portfolio = dict()
+    app.pfData = pd.DataFrame()
+    app.input = ''
+
+def drawPortfolio(app):
+    drawSetup(app)
+    if app.input != 'Stock not found':
+        drawLabel(f'{app.input}', app.cx, 170, size=20, fill='green')
+    else:
+        drawLabel('Could not find stock', app.cx, 170, size=20, fill='red')
+    drawStocks(app)
+ 
+def drawSetup(app):
+    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawLogo(app, 160, 40, 40)
+    drawRect(900, 45, 150, 60, align='center', fill='green', opacity=50, 
+                border='green', borderWidth=5)
+    drawLabel('Market Data', 900, 45, fill='white', size=22)
+    drawLabel('Your Portfolio', app.cx, 45, fill='white', size=40)
+    drawLabel("Enter stock ticker and price in form 'TICKER,PRICE,# OF SHARES' and press 'enter'",
+              app.cx, 115, size=20)
+    drawLabel("or Remove stock by typing 'DELETE=TICKER' and pressing 'enter'",
+              app.cx, 145, size=20)
+
+
+def drawLogo(app, cx, cy, size):
+    textCenter = cx+size - (15/35)*size
+    rectHeight, rectWidth, rectTop = 0.75*size, 0.25*size, cy - (7/20)*size
+    rectGLeft, rectRLeft = (cx-((15/35)*size) - (42.5/20)*size, 
+                            cx-((15/35)*size) - (32.5/20)*size)
+    triHeight, triWidth = 0.3*size, (10.5/20)*size
+    triGMid, triRMid = ((rectGLeft + rectGLeft+rectWidth)/2, 
+                        (rectRLeft + rectRLeft+rectWidth)/2)
+    rBaseY, rLeftX = cy + (7/20)*size, triRMid - triWidth/2
+    gBaseY, gLeftX = cy - (7/20)*size + 1, triGMid - triWidth/2
+    drawLabel('2 Finance', textCenter, cy, bold=True, fill='green', size=size, 
+              font='cinzel')
+    drawRect(rectGLeft, rectTop, rectWidth, rectHeight, fill='green')
+    drawPolygon(gLeftX, gBaseY, triGMid, gBaseY-triHeight, gLeftX+triWidth, gBaseY, 
+                fill='green')
+    drawRect(rectRLeft, rectTop, rectWidth, rectHeight, fill='red')
+    drawPolygon(rLeftX, rBaseY, triRMid, rBaseY+triHeight, rLeftX+triWidth, rBaseY,
+                fill='red')
+
+def addStockClose(app, stock):
+    ticker = yf.Ticker(stock)
+    temp = ticker.history(period='1mo')
+    app.portfolio[f'{stock}'] = temp['Close']
+
+def drawStocks(app):
+    startY = 375
+    for key in app.portfolio:
+        drawLabel(f'{key}', 150, startY)
+        startY += 25
+
+def redrawAll(app):
+    drawPortfolio(app)
+
+def onMousePress(app, mouseX, mouseY):
+    if isIn(app, mouseX, mouseY, 825, 15, 150, 60): 
+        app.screen = 1
+
+def onKeyPress(app, key):
+    if app.input == 'Stock not found':
+        app.input = ''
+    if key == 'space':
+        pass
+    elif key == ',':
+        if app.input.count(',') <= 1:
+            app.input += ','
+    elif key == '-':
+        app.input += '-'
+    elif key == 'backspace':
+        app.input = app.input[:-1]
+    elif key.isalpha() and len(key) == 1:
+        if ',' in app.input:
+            pass
+        else:
+            app.input += key.upper()
+    elif key.isdigit():
+        if ',' in app.input:
+            app.input += key
+        else:
+            pass
+    elif key == '=':
+        app.input += key
+    elif key == 'enter':
+        if 'DELETE' in app.input:
+            equalIndex = app.input.find('=')
+            stock = app.input[equalIndex+1:]
+            del app.portfolio[stock]
+            app.pfData = app.pfData.drop(columns=[stock])
+            app.input = ''
+        else:
+            commaIndex1 = app.input.find(',')
+            stock = app.input[:commaIndex1]
+            rest = app.input[commaIndex1+1:]
+            commaIndex2 = rest.find(',')
+            price = rest[:commaIndex2]
+            numShares = rest[commaIndex2+1:]
+            ticker = yf.Ticker(stock)
+            if isValid(ticker):
+                data = ticker.history(period="1mo")
+                app.pfData[f'{stock}'] = data['Close']
+                app.input = ''
+                app.portfolio[stock] = [price, numShares]
+            else:
+                app.input = 'Stock not found'
+
+def isValid(ticker):
+    info = ticker.info
+    return 'city' in info
+
+def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
+    buttonRightX = buttonLeftX + width
+    buttonBotY = buttonTopY + height
+    return (buttonTopY <= mouseY <= buttonBotY and 
+            buttonLeftX <= mouseX <= buttonRightX)
+
+def main():
+    runApp(app)
+main()
