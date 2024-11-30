@@ -31,12 +31,13 @@ def drawPortfolioScreen(app):
     drawSetup(app)
     if app.input != 'Stock not found' or app.input != 'Maximum number of stocks reached':
         drawLabel(f'{app.input}', app.cx, 170, size=25, fill='green')
-    elif app.input == 'Maximum number of stocks reached':
-        drawLabel('Maximum number of stocks reached', app.cx, 170, size=20, fill='red')
-    else:
-        drawLabel('Could not find stock', app.cx, 170, size=20, fill='red')
+    # elif app.input == 'Maximum number of stocks reached':
+    #     drawLabel('Maximum number of stocks reached', app.cx, 170, size=20, fill='red')
+    # else:
+    #     drawLabel('Could not find stock', app.cx, 170, size=20, fill='red')
     drawStocks(app)
     drawAppSkeleton(app)
+    drawButtonSpaces(app)
  
 def drawSetup(app):
     drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
@@ -75,14 +76,20 @@ def addStockClose(app, stock):
     app.portfolio[f'{stock}'] = temp['Close']
 
 def drawStocks(app):
-    startY = 375
+    startY = 226.25
     for key in app.portfolio:
-        drawLabel(f'{key}', 150, startY)
-        startY += 25
+        drawLabel(f'{key}', 160, startY, size=25)
+        startY += 72.5
+
+def drawButtonSpaces(app):
+    startY = 195
+    for i in range(8):
+        drawRect(60, startY, 200, 62.5, border='black', borderWidth=5, fill=None)
+        startY += 72.5
 
 def drawAppSkeleton(app):
-    drawRect(650, 600, 300, 150, border='black', borderWidth=5, fill=None)
-    drawLabel('Portfolio Performance', 800, 620, size=20)
+    drawRect(675, 675, 300, 150, border='black', borderWidth=5, fill=None, align='center')
+    drawLabel('Portfolio Performance', 675, 620, size=20)
     #draw chart axis
     drawLine(400, 555, 950, 555) 
     drawLabel('$', 385, 380, size=22)
