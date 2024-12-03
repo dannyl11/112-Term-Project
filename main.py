@@ -3,43 +3,15 @@
 # 2) start with 1m defult button green
 
 from cmu_graphics import *
+from buttonClasses import Button, dateButton, statButton
 import pandas as pd
-import pandas_datareader.data as web
 import datetime as dt
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 from pygooglenews import GoogleNews
-
-class Button: #class for stock buttons main and analysis screen
-    def __init__(self, stock, x, y, width, height, fill):
-        self.stock = stock
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.fill = fill
-        self.selected = -1
-
-class dateButton: #class for graph date buttons
-    def __init__(self, weeks, months, x, y, width, height, selected=-1):
-        self.weeksBack = weeks
-        self.monthsBack = months
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.fill = None
-        self.selected = selected
-
-class statButton: #class for RSI and MACD buttons for analysis screen
-    def __init__(self, x, y, metric):
-        self.x = x
-        self.y = y
-        self.width = 200
-        self.height = 70
-        self.metric = metric
-        self.selected = -1
+from PIL import Image
+import os
 
 def onAppStart(app):
     app.stockDict = {'MSFT': 'Microsoft', 'AAPL': 'Apple', 'AMZN': 'Amazon', 
@@ -456,6 +428,7 @@ def getRSI(app, stock): #calculate RSI and return rating
     changeDown = change.copy()
     changeUp[changeUp<0] = 0 #set all negative changes to 0
     changeDown[changeDown>0] = 0 #set all positive changes to 0
+    #^Lines 429 and 430 were from ChatGPT
     df['Gain'] = changeUp
     df['Loss'] = changeDown
     df['EMA Gain'] = df['Gain'].ewm(span=14, min_periods=14).mean()
