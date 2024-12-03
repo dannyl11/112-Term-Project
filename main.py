@@ -95,8 +95,9 @@ def redrawAll(app):
 #Title screen code
 def drawTitleScreen(app):
     drawRect(0, 0, app.width, app.height, fill='black')
-    logosize = (0.15)*app.width
-    drawLogo(app, app.cx, (1/6)*app.height, logosize)
+    logosize = (0.125)*app.width
+    drawLogo(app, app.cx, (1/7)*app.height, logosize)
+    drawImages(app)
     if app.loadbar < (5/8*app.width):
         drawLoadingBar(app)
     if app.loadbar >= (5/8)*app.width:
@@ -107,6 +108,32 @@ def drawTitleScreen(app):
                  border='green', borderWidth=5)
         drawLabel('Track Portfolio Performance', 650, (13/16)*app.height, 
                   size=16, fill='white')
+
+def drawImages(app):
+    aapl = Image.open(os.path.join('images', 'aaple.png'))
+    amzn = Image.open(os.path.join('images', 'amazon.png'))
+    brkb = Image.open(os.path.join('images', 'brkb.png'))
+    avgo = Image.open(os.path.join('images', 'broadcom.png'))
+    lly = Image.open(os.path.join('images', 'elililly.png'))
+    jpm = Image.open(os.path.join('images', 'jpmc.png'))
+    msft = Image.open(os.path.join('images', 'microsoft.png'))
+    tsla = Image.open(os.path.join('images', 'tesla.png'))
+    apple = CMUImage(aapl)
+    amazon = CMUImage(amzn)
+    berkHath = CMUImage(brkb)
+    broadcom = CMUImage(avgo)
+    elililly = CMUImage(lly)
+    jpmorgan = CMUImage(jpm)
+    microsoft = CMUImage(msft)
+    tesla = CMUImage(tsla)
+    drawImage(apple, 200, 300, width=150, height=150, align='center')
+    drawImage(amazon, 400, 300, width=225, height=150,align='center')
+    drawImage(berkHath, 600, 300, width=150, height=150,align='center')
+    drawImage(broadcom, 800, 300, width=150, height=150,align='center')
+    drawImage(elililly, 200, 480, width=200, height=150,align='center')
+    drawImage(jpmorgan, 400, 480, width=225, height=225,align='center')
+    drawImage(microsoft, 600, 480, width=250, height=150,align='center')
+    drawImage(tesla, 800, 480, width=150, height=150,align='center')
 
 def drawLogo(app, cx, cy, size):
     textCenter = cx+size - (15/35)*size
