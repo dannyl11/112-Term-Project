@@ -1,7 +1,3 @@
-#To implement:
-# 1) stock images for title screen
-# 2) start with 1m defult button green
-
 from cmu_graphics import *
 from buttonClasses import Button, dateButton, statButton
 import pandas as pd
@@ -104,7 +100,7 @@ def drawImages(app):
     drawImage(broadcom, 800, 300, width=150, height=150,align='center')
     drawImage(elililly, 200, 480, width=200, height=150,align='center')
     drawImage(jpmorgan, 400, 480, width=225, height=225,align='center')
-    drawImage(microsoft, 600, 480, width=250, height=150,align='center')
+    drawImage(microsoft, 600, 480, width=275, height=150,align='center')
     drawImage(tesla, 800, 480, width=150, height=150,align='center')
 
 def drawLogo(app, cx, cy, size):
@@ -138,7 +134,7 @@ def drawLoadingBar(app):
 
 #Main screen code
 def drawMainScreen(app):
-    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawRect(0, 0, app.width, app.height, fill='black')
     drawDateButtons(app)
     drawAxis(app)
     drawLogo(app, 160, 45, 35)
@@ -151,7 +147,6 @@ def drawMainScreen(app):
         pass
     else:
         drawLabel(f'{app.stockDict[app.stock]}', app.cx, 45, fill='white', size=35)
-        drawAxis(app)
         drawCandles(app)
         drawRect(745, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
@@ -177,10 +172,10 @@ def createStockButtons(app): #create stock buttons and add to app.stockButtons
     app.stockButtons.append(brk)
 
 def drawAxis(app): #create chart axis
-    drawLine(350, 605, 950, 605)
-    drawLabel('Price', 327.5, 405, rotateAngle=-90, size=18)
-    drawLine(350, 605, 350, 205)
-    drawLabel(f'{app.todayM}-{app.todayD}', 930, 620, size=18)
+    drawLine(350, 605, 950, 605, fill='grey')
+    drawLabel('Price', 327.5, 405, rotateAngle=-90, size=18, fill='white')
+    drawLine(350, 605, 350, 205, fill='grey')
+    drawLabel(f'{app.todayM}-{app.todayD}', 930, 620, size=18, fill='white')
 
 def getOpenHighLowCloseVol(app, stock, period):
     result = dict()
@@ -217,44 +212,44 @@ def drawCandles(app): #plot candlesticks
         lowY = graphY-((low-priceMin)/yScale)
         closeY = graphY-((close-priceMin)/yScale)
         if close > open:
-            drawLine(candleX, highY, candleX, closeY)
-            drawLine(candleX, lowY, candleX, openY)
+            drawLine(candleX, highY, candleX, closeY, fill='green')
+            drawLine(candleX, lowY, candleX, openY, fill='green')
             drawRect(candleX-candleWidth/2, closeY, candleWidth, 
                      abs(closeY-openY), fill = 'green')
             candleX += graphLength/len(app.plotpoints)
         elif open > close:
-            drawLine(candleX, highY, candleX, openY)
-            drawLine(candleX, lowY, candleX, closeY)
+            drawLine(candleX, highY, candleX, openY, fill='red')
+            drawLine(candleX, lowY, candleX, closeY, fill='red')
             drawRect(candleX-candleWidth/2, openY, candleWidth, 
                      abs(closeY-openY), fill = 'red')
             candleX += graphLength/len(app.plotpoints)
     drawPrices(app)
 
 def drawPrices(app): #draw dynamic prices on chart
-    drawLabel(f'{int(min(app.lows))}', 327.5, 597.5, size=18)
-    drawLabel(f'{int(max(app.highs))}', 327.5, 212.5, size=18)
+    drawLabel(f'{int(min(app.lows))}', 327.5, 597.5, size=18, fill='white')
+    drawLabel(f'{int(max(app.highs))}', 327.5, 212.5, size=18, fill='white')
 
 def drawButtons(app): #draw stock buttons on left side of screen
     createStockButtons(app)
     for button in app.stockButtons:
         drawRect(button.x, button.y, button.width, button.height, 
-                    border='black', borderWidth=4, fill=None)
+                    border='grey', borderWidth=4, fill=None)
         if button.selected == True:
             drawRect(button.x, button.y, button.width, button.height, 
                     border='black', borderWidth=4, fill='green')
     drawLabels(app)
 
 def drawLabels(app): #draw stock names for stock buttons
-    drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17)
-    drawLabel('Apple (AAPL)', 160, 235, align='center', size=17)
-    drawLabel('Amazon (AMZN)', 160, 315, align='center', size=17)
-    drawLabel('JP Morgan Chase & Co', 160, 385, align='center', size=15)
-    drawLabel('(JPM)', 160, 405, align='center', size=15)
-    drawLabel('Tesla (TSLA)', 160, 475, align='center', size=17)
-    drawLabel('Broadcom Inc (AVGO)', 160, 555, align='center', size=17)
-    drawLabel('Eli Lilly and Co (LLY)', 160, 635, align='center', size=17)
-    drawLabel('Berkshire Hathaway', 160, 705, align='center', size=15)
-    drawLabel('(BRK-B)', 160, 725, align='center', size=15)
+    drawLabel('Microsoft (MSFT)', 160, 155, align='center', size=17, fill='white')
+    drawLabel('Apple (AAPL)', 160, 235, align='center', size=17, fill='white')
+    drawLabel('Amazon (AMZN)', 160, 315, align='center', size=17, fill='white')
+    drawLabel('JP Morgan Chase & Co', 160, 385, align='center', size=15, fill='white')
+    drawLabel('(JPM)', 160, 405, align='center', size=15, fill='white')
+    drawLabel('Tesla (TSLA)', 160, 475, align='center', size=17, fill='white')
+    drawLabel('Broadcom Inc (AVGO)', 160, 555, align='center', size=17, fill='white')
+    drawLabel('Eli Lilly and Co (LLY)', 160, 635, align='center', size=17, fill='white')
+    drawLabel('Berkshire Hathaway', 160, 705, align='center', size=15, fill='white')
+    drawLabel('(BRK-B)', 160, 725, align='center', size=15, fill='white')
 
 def getTodayDate(app):
     today = str(date.today())
@@ -287,39 +282,39 @@ def drawDateButtons(app): #draw buttons to change chart timeframe
     createDateButtons(app)
     for button in app.dateButtons:
         drawRect(button.x, button.y, button.width, button.height, fill=button.fill,
-                 border='black', borderWidth=2.5)
+                 border='grey', borderWidth=2.5)
         if button.selected == True and app.stock != None:
             drawRect(button.x, button.y, button.width, button.height, fill='green',
-                 border='black', borderWidth=2.5)
-    drawLabel('1Y', 455, 150, size=22)
-    drawLabel('6M', 588+(1/3), 150, size=22)
-    drawLabel('1M', 721+(2/3), 150, size=22)
-    drawLabel('1W', 855, 150, size=22)
+                 border='grey', borderWidth=2.5)
+    drawLabel('1Y', 455, 150, size=22, fill='white')
+    drawLabel('6M', 588+(1/3), 150, size=22, fill='white')
+    drawLabel('1M', 721+(2/3), 150, size=22, fill='white')
+    drawLabel('1W', 855, 150, size=22, fill='white')
 
 def drawStats(app): #draw financial info under chart
-    drawRect(372.5, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
-    drawRect(565, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
-    drawRect(757.5, 645, 170, 80, fill=None, border='black', borderWidth=2.5)
-    drawLabel('Volume:', 457.5, 665, size=20)
-    drawLabel('Market Cap:', 650, 665, size=20)
-    drawLabel('PE Ratio (TTM):', 842.5, 665, size=20)
+    drawRect(372.5, 645, 170, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(565, 645, 170, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(757.5, 645, 170, 80, fill=None, border='grey', borderWidth=2.5)
+    drawLabel('Volume:', 457.5, 665, size=20, fill='white')
+    drawLabel('Market Cap:', 650, 665, size=20, fill='white')
+    drawLabel('PE Ratio (TTM):', 842.5, 665, size=20, fill='white')
     stock = yf.Ticker(app.stock)
     vol = stock.info['volume'] / 10**6 #in millions
     mc = stock.info['marketCap'] / 10**12 #in trillions
     pe = stock.info['trailingPE']
-    drawLabel(f'{pythonRound(vol, 1)} M', 457.5, 700, size=20)
-    drawLabel(f'{pythonRound(mc, 2)} T', 650, 700, size=20)
-    drawLabel(f'{pythonRound(pe, 2)}', 842.5, 700, size=20)
+    drawLabel(f'{pythonRound(vol, 1)} M', 457.5, 700, size=20, fill='white')
+    drawLabel(f'{pythonRound(mc, 2)} T', 650, 700, size=20, fill='white')
+    drawLabel(f'{pythonRound(pe, 2)}', 842.5, 700, size=20, fill='white')
 
 #Analysis screen code
 def drawAnalysisScreen(app):
-    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawRect(0, 0, app.width, app.height, fill='black')
     drawLogo(app, 160, 40, 40)
     drawButtons(app)
     try:
-        drawLabel(f'{app.stockDict[app.stock]}', 629.5, 140, size=40)
+        drawLabel(f'{app.stockDict[app.stock]}', 629.5, 140, size=40, fill='white')
     except:
-        drawLabel('None', 629.5, 140, size=40)
+        drawLabel('None', 629.5, 140, size=40, fill='white')
     drawRect(745, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
     drawLabel('Market Data', 745, 45, fill='white', size=22)
@@ -340,22 +335,22 @@ def drawStatButtons(app): #draw RSI and MACD buttons
     createStatButtons(app)
     for sb in app.statButtons:
         if sb.selected == 1:
-            drawRect(sb.x, sb.y, sb.width, sb.height, border='black', borderWidth=5, 
+            drawRect(sb.x, sb.y, sb.width, sb.height, border='grey', borderWidth=5, 
                      fill='green')
         elif sb.selected == -1:
-            drawRect(sb.x, sb.y, sb.width, sb.height, border='black', borderWidth=5, 
+            drawRect(sb.x, sb.y, sb.width, sb.height, border='grey', borderWidth=5, 
                      fill=None)
-    drawLabel('RSI', 470+(1/3), 230, size=24)
-    drawLabel('MACD', 788+(2/3), 230, size=24)
+    drawLabel('RSI', 470+(1/3), 230, size=24, fill='white')
+    drawLabel('MACD', 788+(2/3), 230, size=24, fill='white')
 
 def drawRating(app): #draw RSI and MACD values
     drawRect(529.5, 295, 200, 120, fill=None,
-             border='black', borderWidth=5)
+             border='grey', borderWidth=5)
     if app.metric == None:
-        drawLabel('Rating:', 629.5, 320, size=22)
+        drawLabel('Rating:', 629.5, 320, size=22, fill='white')
     elif app.metric == 'RSI':
         result, color = getRSI(app, app.stock)
-        drawLabel(f'RSI: {pythonRound(result, 2)}', 629.5, 320, size=20)
+        drawLabel(f'RSI: {pythonRound(result, 2)}', 629.5, 320, size=20, fill='white')
         if color == 'green':
             drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
         elif color == 'grey':
@@ -364,7 +359,7 @@ def drawRating(app): #draw RSI and MACD values
             drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
     elif app.metric == 'MACD':
         result, color = getMACD(app, app.stock)
-        drawLabel(f'MACD: {result}', 629.5, 320, size=18)
+        drawLabel(f'MACD: {result}', 629.5, 320, size=18, fill='white')
         if color == 'green':
             drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
         elif color == 'grey':
@@ -374,16 +369,16 @@ def drawRating(app): #draw RSI and MACD values
 
 def drawHeadlines(app): #grab and draw news headlines
     if app.stock == None:
-        drawLabel('Headlines', 629.5, 487.5, size=28)
-        drawLine(314.5, 487.5, 550, 487.5, lineWidth=5)
-        drawLine(944.5, 487.5, 705, 487.5, lineWidth=5)
+        drawLabel('Headlines', 629.5, 487.5, size=28, fill='white')
+        drawLine(314.5, 487.5, 550, 487.5, lineWidth=5, fill='grey')
+        drawLine(944.5, 487.5, 705, 487.5, lineWidth=5, fill='grey')
     else:
-        drawLabel(f'{app.stock} Headlines', 629.5, 487.5, size=28)
-    drawLine(314.5, 487.5, 314.5, 747.5, lineWidth=5)
-    drawLine(314.5, 747.5, 944.5, 747.5, lineWidth=5)
-    drawLine(944.5, 747.5, 944.5, 487.5, lineWidth=5)
-    drawLine(314.5, 487.5, 510, 487.5, lineWidth=5)
-    drawLine(944.5, 487.5, 750, 487.5, lineWidth=5)
+        drawLabel(f'{app.stock} Headlines', 629.5, 487.5, size=28, fill='white')
+    drawLine(314.5, 487.5, 314.5, 747.5, lineWidth=5, fill='grey')
+    drawLine(314.5, 747.5, 944.5, 747.5, lineWidth=5, fill='grey')
+    drawLine(944.5, 747.5, 944.5, 487.5, lineWidth=5, fill='grey')
+    drawLine(314.5, 487.5, 510, 487.5, lineWidth=5, fill='grey')
+    drawLine(944.5, 487.5, 750, 487.5, lineWidth=5, fill='grey')
     gn = GoogleNews()
     try:
         news = gn.search(query=f'{app.stockDict[app.stock]}', helper=True)
@@ -399,23 +394,23 @@ def drawHeadlines(app): #grab and draw news headlines
                 headline = headline[:-1]
             publisher = item[dashIndex+3:]
             if len(headline) > 130:
-                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
-                drawLabel(f'- {headline[65:130]}-', 325, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[65:130]}-', 325, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
                 drawLabel(f'  {headline[130:]}, per: {publisher}', 325, headlineY, 
                 align='left', size=18)
                 headlineY += 30
             elif len(headline) > 65:
-                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18)
+                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
                 drawLabel(f'  {headline[65:]}, per: {publisher}', 325, headlineY, 
-                align='left', size=18)
+                align='left', size=18, fill='white')
                 headlineY += 30
             else:
-                drawLabel(f'- {headline}, ', 325, headlineY, size=18, align='left')
+                drawLabel(f'- {headline}, ', 325, headlineY, size=18, align='left', fill='white')
                 headlineY += 30
-                drawLabel(f'  per: {publisher}', 325, headlineY, size=18, align='left')
+                drawLabel(f'  per: {publisher}', 325, headlineY, size=18, align='left', fill='white')
                 headlineY += 30
     except:
         return
@@ -489,14 +484,14 @@ def drawPortfolioScreen(app):
     drawPortfolioPerformance(app)
 
 def drawSetup(app): #draw graphics to setup screen
-    drawRect(0, 0, 2*app.width, 180, align='center', fill='black')
+    drawRect(0, 0, app.width, app.height, fill='black')
     drawLogo(app, 160, 40, 40)
     drawRect(900, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
     drawLabel('Market Data', 900, 45, fill='white', size=22)
     drawLabel('Your Portfolio', app.cx, 45, fill='white', size=40)
     drawLabel("Enter stock ticker and price in form 'TICKER,PRICE,# OF SHARES' and press 'enter' or remove stock by typing 'DELETE=TICKER' and pressing 'enter'",
-              app.cx, 110, size=14)
+              app.cx, 110, size=14, fill='white')
 
 def drawChart(app): #graph the portfolio performance
     if len(app.timeData) != 0:
@@ -519,16 +514,16 @@ def drawChart(app): #graph the portfolio performance
             elif currY < nextY:
                 drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'red')
             else:
-                drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'black')
+                drawLine(currX, currY, nextX, nextY, lineWidth=4, fill = 'grey')
     else:
         return 
 
 def drawStocksandPrices(app): #draw stocks in portfolio and closing price
     startY = 195
     for key in app.portfolio:
-        drawLabel(f'{key} ({int(app.portfolio[key][1])})', 130, startY, size=25)
+        drawLabel(f'{key} ({int(app.portfolio[key][1])})', 130, startY, size=25, fill='white')
         closePrice = app.pfData[key].iloc[-1]
-        drawLabel(f'${pythonRound(closePrice, 2)}', 277.5, startY-13, size=18)
+        drawLabel(f'${pythonRound(closePrice, 2)}', 277.5, startY-13, size=18, fill='white')
         pctChange, color = getPctChange(app, key, closePrice)
         drawLabel(f'{pctChange}%', 277.5, startY+13, size=18, fill=color)
         startY += 75
@@ -545,31 +540,31 @@ def getPctChange(app, stock, closePrice): #get pct change of stock from purchase
 
 def drawAppSkeleton(app): #draw chart axis
     #draw chart axis
-    drawLine(415, 600, 965, 600) 
-    drawLabel('$', 400, 420, size=22)
-    drawLine(415, 600, 415, 240)
-    drawLabel(f'{app.todayM}-{app.todayD}', 945, 615, size=18)
+    drawLine(415, 600, 965, 600, fill='grey') 
+    drawLabel('$', 400, 420, size=22, fill='white')
+    drawLine(415, 600, 415, 240, fill='grey')
+    drawLabel(f'{app.todayM}-{app.todayD}', 945, 615, size=18, fill='white')
 
 def drawButtonSpaces(app): #draw area where stocks are displayed
     startY = 162.5
     for i in range(8):
-        drawRect(45, startY, 170, 65, border='black', borderWidth=5, fill=None)
+        drawRect(45, startY, 170, 65, border='grey', borderWidth=5, fill=None)
         # drawRect(215, startY, 125, 65, border='black', borderWidth=5, fill=None)
-        drawLine(215, startY+2.75, 342.5, startY+2.75, lineWidth=5)
-        drawLine(215, startY+62.25, 342.5, startY+62.25, lineWidth=5)
-        drawLine(340, startY+2.75, 340, startY+62.25, lineWidth=5)
+        drawLine(215, startY+2.75, 342.5, startY+2.75, lineWidth=5, fill='grey')
+        drawLine(215, startY+62.25, 342.5, startY+62.25, lineWidth=5, fill='grey')
+        drawLine(340, startY+2.75, 340, startY+62.25, lineWidth=5, fill='grey')
         startY += 75
 
 def drawPortfolioPerformance(app): #draw box at bottom with portfolio's performance
-    drawRect(675, 700, 300, 150, border='black', borderWidth=5, fill=None, align='center')
-    drawLabel('Portfolio Performance', 675, 652.5, size=24)
+    drawRect(675, 700, 300, 150, border='grey', borderWidth=5, fill=None, align='center')
+    drawLabel('Portfolio Performance', 675, 652.5, size=24, fill='white')
     try:
         totalValue = 0
         for stock in app.portfolio:
             numShares = app.portfolio[stock][1]
             closePrice = app.pfData[stock].iloc[-1]
             totalValue += numShares * closePrice
-        drawLabel(f'Total Value: {pythonRound(totalValue, 2)}', 675, 690, size=22)
+        drawLabel(f'Total Value: {pythonRound(totalValue, 2)}', 675, 690, size=22, fill='white')
         performance, color = getPerformance(app, totalValue)
         drawLabel(f'{performance}%', 675, 730, fill=color, size=22)
     except:
@@ -606,14 +601,14 @@ def drawPFDateButtons(app): #draw buttons to change chart timeframe
     createPFDateButtons(app)
     for button in app.pfDateButtons:
         drawRect(button.x, button.y, button.width, button.height, fill=button.fill,
-                 border='black', borderWidth=2.5)
+                 border='grey', borderWidth=2.5)
         if button.selected == True:
             drawRect(button.x, button.y, button.width, button.height, fill='green',
-                 border='black', borderWidth=2.5)
-    drawLabel('1Y', 495, 200, size=22)
-    drawLabel('6M', 625, 200, size=22)
-    drawLabel('1M', 755, 200, size=22)
-    drawLabel('1W', 885, 200, size=22)
+                 border='grey', borderWidth=2.5)
+    drawLabel('1Y', 495, 200, size=22, fill='white')
+    drawLabel('6M', 625, 200, size=22, fill='white')
+    drawLabel('1M', 755, 200, size=22, fill='white')
+    drawLabel('1W', 885, 200, size=22, fill='white')
 
 def onStep(app):
     if app.loadbar <= (5/8)*app.width:
@@ -780,6 +775,10 @@ def onKeyPress(app, key): #for portfolio screen
                 
             else:
                 app.input = 'Stock not found'
+
+def onKeyHold(app, keys):
+    if app.screen == 3 and 'backspace' in keys:
+        app.input = app.input[:-1]
 
 def isIn(app, mouseX, mouseY, buttonLeftX, buttonTopY, width, height):
     buttonRightX = buttonLeftX + width
