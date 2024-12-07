@@ -146,26 +146,32 @@ def drawMainScreen(app):
     drawLogo(app, 160, 45, 35)
     drawRect(910, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
-    drawLabel('Portfolio', 910, 45, fill='white', size=26)
-    drawRect(50, 350, 200, 100, fill=None, border='grey', borderWidth=2.5)
-    drawRect(50, 470, 200, 100, fill=None, border='grey', borderWidth=2.5)
-    drawRect(50, 590, 200, 100, fill=None, border='grey', borderWidth=2.5)
-    drawLabel('Volume:', 150, 370, size=20, fill='white')
-    drawLabel('Market Cap:', 150, 490, size=20, fill='white')
-    drawLabel('PE Ratio (TTM):', 150, 610, size=20, fill='white')
+    drawLabel('Portfolio', 910, 45, fill='white', size=22)
+
+    #for stats
+    drawRect(50, 200, 200, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(50, 300, 200, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(50, 400, 200, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(50, 500, 200, 80, fill=None, border='grey', borderWidth=2.5)
+    drawRect(50, 600, 200, 80, fill=None, border='grey', borderWidth=2.5)
+    drawLabel('Volume:', 150, 220, size=20, fill='white')
+    drawLabel('Market Cap:', 150, 320, size=20, fill='white')
+    drawLabel('Beta:', 150, 420, size=20, fill='white')
+    drawLabel('EPS (TTM):', 150, 520, size=20, fill='white')
+    drawLabel('PE Ratio (TTM):', 150, 620, size=20, fill='white')
     if app.stock == None:
         drawLabel('Enter stock ticker', app.cx, 45, fill='white', size=30)
         drawLabel(f'{app.mainInput}', app.cx, 120, fill='green', size=22)
         pass
     else:
+        if app.input != 'Stock not found' or app.input != '':
+            drawLabel(f'{app.mainInput}', app.cx, 120, size=22, fill='green')
         drawLabel(f'{app.stock}', app.cx, 45, fill='white', size=35)
         drawCandles(app)
         drawRect(745, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
         drawLabel('Analysis', 745, 45, fill='white', size=22)
         drawStats(app)
-        if app.mainInput != '':
-            drawLabel(f'{app.mainInput}', app.cx, 120, fill='green', size=22)
 
 def drawAxis(app): #create chart axis
     drawLine(350, 680, 950, 680, fill='grey')
@@ -267,21 +273,40 @@ def drawDateButtons(app): #draw buttons to change chart timeframe
 
 def drawStats(app): #draw financial info under chart
     stock = yf.Ticker(app.stock)
-    vol = stock.info['volume'] / 10**6 #in millions
-    mc = stock.info['marketCap'] / 10**12 #in trillions
-    pe = stock.info['trailingPE']
-    drawLabel(f'{pythonRound(vol, 1)} M', 150, 420, size=20, fill='white')
-    drawLabel(f'{pythonRound(mc, 2)} T', 150, 540, size=20, fill='white')
-    drawLabel(f'{pythonRound(pe, 2)}', 150, 660, size=20, fill='white')
+    try:
+        vol = stock.info['volume'] / 10**6 #in millions
+        drawLabel(f'{pythonRound(vol, 1)} M', 150, 250, size=20, fill='white')
+    except:
+        pass
+    try:
+        mc = stock.info['marketCap'] / 10**12 #in trillions
+        drawLabel(f'{pythonRound(mc, 2)}', 150, 350, size=20, fill='white')
+    except:
+        pass
+    try:
+        pe = stock.info['trailingPE']
+        drawLabel(f'{pythonRound(pe, 2)}', 150, 650, size=20, fill='white')
+    except:
+        pass
+    try:
+        eps = stock.info['trailingEps']
+        drawLabel(f'{pythonRound(eps, 2)}', 150, 550, size=20, fill='white')
+    except:
+        pass
+    try:
+        beta = stock.info['beta']
+        drawLabel(f'{pythonRound(beta, 2)}', 150, 450, size=20, fill='white')
+    except:
+        pass
 
 #Analysis screen code
 def drawAnalysisScreen(app):
     drawRect(0, 0, app.width, app.height, fill='black')
     drawLogo(app, 160, 40, 40)
     try:
-        drawLabel(f'{app.stockDict[app.stock]}', 629.5, 140, size=40, fill='white')
+        drawLabel(f'{app.stock}', app.cx, 140, size=40, fill='white')
     except:
-        drawLabel('None', 629.5, 140, size=40, fill='white')
+        drawLabel('None', app.cx, 140, size=40, fill='white')
     drawRect(910, 45, 150, 60, align='center', fill='green', opacity=50, 
                 border='green', borderWidth=5)
     drawLabel('Market Data', 910, 45, fill='white', size=22)
@@ -290,9 +315,9 @@ def drawAnalysisScreen(app):
     drawHeadlines(app)
 
 def createStatButtons(app): #create RSI and MACD buttons
-    rsi = statButton(370+(1/3), 195, 'RSI')
+    rsi = statButton(240, 195, 'RSI')
     app.statButtons.append(rsi)
-    macd = statButton(688+(2/3), 195, 'MACD')
+    macd = statButton(560, 195, 'MACD')
     app.statButtons.append(macd)
 
 def drawStatButtons(app): #draw RSI and MACD buttons
@@ -304,48 +329,48 @@ def drawStatButtons(app): #draw RSI and MACD buttons
         elif sb.selected == -1:
             drawRect(sb.x, sb.y, sb.width, sb.height, border='grey', borderWidth=5, 
                      fill=None)
-    drawLabel('RSI', 470+(1/3), 230, size=24, fill='white')
-    drawLabel('MACD', 788+(2/3), 230, size=24, fill='white')
+    drawLabel('RSI', 340, 230, size=24, fill='white')
+    drawLabel('MACD', 660, 230, size=24, fill='white')
 
 def drawRating(app): #draw RSI and MACD values
-    drawRect(529.5, 295, 200, 120, fill=None,
-             border='grey', borderWidth=5)
+    drawRect(app.cx, 355, 200, 120, fill=None,
+             border='grey', borderWidth=5, align='center')
     if app.metric == None:
-        drawLabel('Rating:', 629.5, 320, size=22, fill='white')
+        drawLabel('Rating:', app.cx, 320, size=22, fill='white')
     elif app.metric == 'RSI':
         result, color = getRSI(app, app.stock)
-        drawLabel(f'RSI: {pythonRound(result, 2)}', 629.5, 320, size=20, fill='white')
+        drawLabel(f'RSI: {pythonRound(result, 2)}', app.cx, 320, size=20, fill='white')
         if color == 'green':
-            drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('BUY', app.cx, 370, fill=color, size=30, bold=True)
         elif color == 'grey':
-            drawLabel('HOLD', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('HOLD', app.cx, 370, fill=color, size=30, bold=True)
         elif color == 'red':
-            drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('SELL', app.cx, 370, fill=color, size=30, bold=True)
     elif app.metric == 'MACD':
         result, color = getMACD(app, app.stock)
-        drawLabel(f'MACD: {result}', 629.5, 320, size=18, fill='white')
+        drawLabel(f'MACD: {result}', app.cx, 320, size=18, fill='white')
         if color == 'green':
-            drawLabel('BUY', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('BUY', app.cx, 370, fill=color, size=30, bold=True)
         elif color == 'grey':
-            drawLabel('HOLD', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('HOLD', app.cx, 370, fill=color, size=30, bold=True)
         elif color == 'red':
-            drawLabel('SELL', 629.5, 370, fill=color, size=30, bold=True)
+            drawLabel('SELL', app.cx, 370, fill=color, size=30, bold=True)
 
-def drawHeadlines(app): #grab and draw news headlines
+def drawHeadlines(app): #grab and draw news headlines, 129.5
     if app.stock == None:
-        drawLabel('Headlines', 629.5, 487.5, size=28, fill='white')
-        drawLine(314.5, 487.5, 550, 487.5, lineWidth=5, fill='grey')
-        drawLine(944.5, 487.5, 705, 487.5, lineWidth=5, fill='grey')
+        drawLabel('Headlines', app.cx, 487.5, size=28, fill='white')
+        drawLine(185.5, 487.5, 420.5, 487.5, lineWidth=5, fill='grey')
+        drawLine(815.5, 487.5, 575.5, 487.5, lineWidth=5, fill='grey')
     else:
-        drawLabel(f'{app.stock} Headlines', 629.5, 487.5, size=28, fill='white')
-    drawLine(314.5, 487.5, 314.5, 747.5, lineWidth=5, fill='grey')
-    drawLine(314.5, 747.5, 944.5, 747.5, lineWidth=5, fill='grey')
-    drawLine(944.5, 747.5, 944.5, 487.5, lineWidth=5, fill='grey')
-    drawLine(314.5, 487.5, 510, 487.5, lineWidth=5, fill='grey')
-    drawLine(944.5, 487.5, 750, 487.5, lineWidth=5, fill='grey')
+        drawLabel(f'{app.stock} Headlines', app.cx, 487.5, size=28, fill='white')
+    drawLine(185.5, 487.5, 185.5, 747.5, lineWidth=5, fill='grey')
+    drawLine(185.5, 747.5, 815.5, 747.5, lineWidth=5, fill='grey')
+    drawLine(815.5, 747.5, 815.5, 487.5, lineWidth=5, fill='grey')
+    drawLine(185.5, 487.5, 380.5, 487.5, lineWidth=5, fill='grey')
+    drawLine(815.5, 487.5, 620.5, 487.5, lineWidth=5, fill='grey')
     gn = GoogleNews()
     try:
-        news = gn.search(query=f'{app.stockDict[app.stock]}', helper=True)
+        news = gn.search(query=f'{app.stock}', helper=True)
         headlines = []
         for item in news['entries']:
             if len(headlines) < 3:
@@ -358,23 +383,23 @@ def drawHeadlines(app): #grab and draw news headlines
                 headline = headline[:-1]
             publisher = item[dashIndex+3:]
             if len(headline) > 130:
-                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18, fill='white')
+                drawLabel(f'- {headline[:65]}-', 195.5, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
-                drawLabel(f'- {headline[65:130]}-', 325, headlineY, align='left', size=18, fill='white')
+                drawLabel(f'- {headline[65:130]}-', 195.5, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
-                drawLabel(f'  {headline[130:]}, per: {publisher}', 325, headlineY, 
+                drawLabel(f'  {headline[130:]}, per: {publisher}', 195.5, headlineY, 
                 align='left', size=18)
                 headlineY += 30
             elif len(headline) > 65:
-                drawLabel(f'- {headline[:65]}-', 325, headlineY, align='left', size=18, fill='white')
+                drawLabel(f'- {headline[:65]}-', 195.5, headlineY, align='left', size=18, fill='white')
                 headlineY += 30
-                drawLabel(f'  {headline[65:]}, per: {publisher}', 325, headlineY, 
+                drawLabel(f'  {headline[65:]}, per: {publisher}', 195.5, headlineY, 
                 align='left', size=18, fill='white')
                 headlineY += 30
             else:
-                drawLabel(f'- {headline}, ', 325, headlineY, size=18, align='left', fill='white')
+                drawLabel(f'- {headline}, ', 195.5, headlineY, size=18, align='left', fill='white')
                 headlineY += 30
-                drawLabel(f'  per: {publisher}', 325, headlineY, size=18, align='left', fill='white')
+                drawLabel(f'  per: {publisher}', 195.5, headlineY, size=18, align='left', fill='white')
                 headlineY += 30
     except:
         return
@@ -663,12 +688,14 @@ def onMousePress(app, mouseX, mouseY):
 
 def onKeyPress(app, key): #for portfolio screen
     if app.screen == 1:
-        if app.input == 'Stock not found':
+        if app.mainInput == 'Stock not found':
             app.mainInput = ''
         elif key == 'backspace':
             app.mainInput = app.mainInput[:-1]
         elif key.isalpha() and len(key) == 1:
             app.mainInput += key.upper()
+        elif key == '-':
+            app.mainInput += key
         elif key == 'enter':
             ticker = yf.Ticker(app.mainInput)
             if isValid(ticker):
