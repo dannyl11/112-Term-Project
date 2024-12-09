@@ -699,6 +699,7 @@ def onKeyPress(app, key): #for portfolio screen
         elif key == 'enter':
             ticker = yf.Ticker(app.mainInput)
             if isValid(ticker):
+                onMousePress(app, 720, 250)
                 app.stock = app.mainInput
                 app.mainInput = ''
                 try:
