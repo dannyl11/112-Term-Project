@@ -759,6 +759,7 @@ def onKeyPress(app, key): #for portfolio screen
                 app.plotData['TV'] = app.pfData2.sum(axis=1)
                 app.oneYData = app.plotData['TV'].tolist()
                 app.input = ''
+                onMousePress(app, app.cursorX, app.cursorY)
             elif app.input.count(',') != 2 or app.input[-1] == ',':
                 pass
             else:
