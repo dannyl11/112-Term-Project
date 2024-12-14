@@ -175,7 +175,7 @@ def drawMainScreen(app):
 
 def drawAxis(app): #create chart axis
     drawLine(350, 680, 950, 680, fill='grey')
-    drawLabel('Price', 327.5, 405, rotateAngle=-90, size=18, fill='white')
+    drawLabel('Price', 327.5, 480, rotateAngle=-90, size=18, fill='white')
     drawLine(350, 680, 350, 280, fill='grey')
     drawLabel(f'{app.todayM}-{app.todayD}', 930, 695, size=18, fill='white')
 
